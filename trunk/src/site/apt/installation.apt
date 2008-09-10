@@ -1,0 +1,11 @@
+Installation Instructions
+
+From the binary:
+	
+From the source:
+
+	checkout project:
+	{{{source-repository.html}the source repository}}
+	build with maven:
+	mvn install
+

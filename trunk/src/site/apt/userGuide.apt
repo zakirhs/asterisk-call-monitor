@@ -1,0 +1,39 @@
+User Guide
+
+
+    * Introduction
+
+          ** Mission
+
+          ** Background Information
+
+          ** Model Overview
+
+          ** Usage scenarios
+
+    * Core Concepts
+
+          ** The Application
+
+    * Views
+
+          ** Lifecycle
+
+    * Action Framework
+
+          ** Overview
+
+          ** Action Configuration
+
+          ** Global Actions
+
+    * Component Construction
+
+          ** The Component Factory
+
+    * Settings and Preferences support
+
+    * Threading
+
+          ** Overview
+
