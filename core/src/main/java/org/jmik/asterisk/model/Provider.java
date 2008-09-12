@@ -47,11 +47,24 @@ public interface Provider extends ManagerEventListener{
 	 */
 	public Set<Call> getAttachedCalls();
 
+	/**
+	 * Returns a set of living CallConstruction
+	 * @return Set 
+	 */
 	public Set<CallCostruction> getCallConstrutions();
-
+	
+	/**
+	 * Returns a set of ProviderListener
+	 * @return
+	 */
 	public List<ProviderListener> getListeners();
 
+	/**
+	 * Returns the instance of asterisk ManagerConnection
+	 * @return
+	 */
 	public ManagerConnection getManagerConnection();
+	
 	/**
 	 * Remove a call construction
 	 * @param callConstruction

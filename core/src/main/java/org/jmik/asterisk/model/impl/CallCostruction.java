@@ -3,6 +3,7 @@ package org.jmik.asterisk.model.impl;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
+import org.asteriskjava.manager.event.HangupEvent;
 import org.asteriskjava.manager.event.ManagerEvent;
 import org.asteriskjava.manager.event.MeetMeJoinEvent;
 import org.asteriskjava.manager.event.NewChannelEvent;
@@ -34,9 +35,13 @@ public class CallCostruction {
 	public Stack<ManagerEvent> eventStack = new Stack<ManagerEvent>();
 	
 	public CallCostruction(Provider provider,NewChannelEvent newChannelEvent){
+		if(provider == null) throw new IllegalArgumentException("provider can not be null");
+		if(newChannelEvent == null) throw new IllegalArgumentException("newChannelEvent can not be null");
+		if("Ring".equals(newChannelEvent.getState()) == false) throw new IllegalArgumentException("the state of the nce must be Ring");
+		
 		this.provider = provider;
 		waitState = WAIT_NEW_EXT;
-		eventStack.add(newChannelEvent);
+		eventStack.push(newChannelEvent);
 	}
 
 	public boolean processEvent(ManagerEvent event){
@@ -88,10 +93,10 @@ public class CallCostruction {
 							logger.info("instantiate a new twoPartiesCall " + twoPartiesCall);
 							return true;
 							
-						}else if(newExtenEvent.getApplication().equals("Playback") 
+						}else /*if(newExtenEvent.getApplication().equals("Playback") 
 								||newExtenEvent.getApplication().equals("MeetMe")
 								||newExtenEvent.getApplication().equals("AGI")
-								){
+								)*/{
 							waitState = WAIT_NEW_STATE_UP;
 							eventStack.push(newExtenEvent);
 							logger.info("WAIT_NEW_STATE_UP " + this);
@@ -99,7 +104,6 @@ public class CallCostruction {
 						}
 					}
 				}
-				
 				break;
 				
 			case WAIT_NEW_STATE_UP:
@@ -111,7 +115,12 @@ public class CallCostruction {
 					
 					if(newStateEvent.getUniqueId().equals(newExtenEvent.getUniqueId())){
 						
-						if(newExtenEvent.getApplication().equals("Playback") ){
+						if(newExtenEvent.getApplication().equals("MeetMe")){
+							waitState = WAIT_MEETMEJOIN;
+							logger.info("WAIT_MEETMEJOIN " + this);
+							eventStack.push(newStateEvent);
+						}
+						else/*(newExtenEvent.getApplication().equals("Playback") )*/{
 
 							newExtenEvent = (NewExtenEvent)eventStack.pop();
 							NewChannelEvent newChannelEvent = (NewChannelEvent)eventStack.pop();
@@ -133,16 +142,22 @@ public class CallCostruction {
 							provider.attachCall(singleCall);
 							logger.info("instantiate a new singleCall " + singleCall);
 							
-						}else if(newExtenEvent.getApplication().equals("MeetMe")){
+						}/*else if(newExtenEvent.getApplication().equals("MeetMe")){
 							waitState = WAIT_MEETMEJOIN;
 							logger.info("WAIT_MEETMEJOIN " + this);
 							eventStack.push(newStateEvent);
-						}
+						}*/
 						/*else if(newExtenEvent.getApplication().equals("AGI")){
 							//TODO
 							waitState = WAIT_AGI;
 							eventStack.push(newExtenEvent);
 						}*/
+					}
+				}else if(event instanceof HangupEvent) {
+					HangupEvent he = (HangupEvent) event;
+					NewExtenEvent newExtenEvent = (NewExtenEvent) eventStack.peek();
+					if(he.getUniqueId().equals(newExtenEvent.getUniqueId())) {
+						provider.removeCallConstruction(this);
 					}
 				}
 				
