@@ -34,15 +34,19 @@ import javax.sip.header.ViaHeader;
 import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 
+import org.apache.log4j.Logger;
 import org.mik.asterisk.model.CallListener;
 import org.mik.asterisk.model.ProviderListener;
 import org.mik.asterisk.model.call.Call;
+import org.mik.asterisk.model.call.CallConstruction;
 import org.mik.asterisk.model.call.impl.Channel;
 import org.mik.asterisk.model.call.impl.ConferenceCall;
 
 
 public class ConferenceMonitor implements ProviderListener, CallListener, SipListener {
 	
+	private static Logger logger = Logger.getLogger(ConferenceMonitor.class);
+
 	private Map noteTakers;
 	private SipStack sipStack;
 	private HeaderFactory headerFactory;

@@ -1,9 +1,11 @@
 package org.jmik.asterisk.monitor;
 
+import org.apache.log4j.Logger;
 import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.AgiScript;
 import org.asteriskjava.fastagi.DefaultAgiServer;
 import org.asteriskjava.fastagi.MappingStrategy;
+import org.jmik.asterisk.gui.PresentationModel;
 
 /**
  * This class extends a DefaultAgiServer and use
@@ -14,6 +16,8 @@ import org.asteriskjava.fastagi.MappingStrategy;
  */
 public class ConferenceMonitorAgiServer extends DefaultAgiServer{
 
+	private static Logger logger = Logger.getLogger(ConferenceMonitorAgiServer.class);
+
 	private ConferenceMonitorScript conferenceMonitorScript;
 	
 	/**
@@ -21,8 +25,10 @@ public class ConferenceMonitorAgiServer extends DefaultAgiServer{
 	 * @param conferenceMonitorScript
 	 */
 	public ConferenceMonitorAgiServer(ConferenceMonitorScript conferenceMonitorScript) {
-		if(conferenceMonitorScript == null)
+		if(conferenceMonitorScript == null){
+			logger.error("conferenceMonitorScript null");
 			throw new IllegalStateException("conferenceMonitorScript cannot be null");
+		}
 		
 		this.conferenceMonitorScript = conferenceMonitorScript;
 		setMappingStrategy(new ConferenceMonitorMappingStrategy());
@@ -34,8 +40,11 @@ public class ConferenceMonitorAgiServer extends DefaultAgiServer{
 	 */
 	class ConferenceMonitorMappingStrategy implements MappingStrategy{
 
+		private Logger log = Logger.getLogger(ConferenceMonitorMappingStrategy.class);
+
 		public AgiScript determineScript(AgiRequest agiRequest) {
 			if(agiRequest.getScript().equals("conferenceMonitor")){
+				log.info("determineScript " + conferenceMonitorScript);
 				return conferenceMonitorScript;
 			}
 			return null;

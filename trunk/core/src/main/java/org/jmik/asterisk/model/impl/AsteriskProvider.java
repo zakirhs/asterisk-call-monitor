@@ -188,7 +188,7 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 
 	public void stateChanged(int oldState, Call call) {
 		if(call.getState() == Call.INVALID_STATE) {
-			System.out.println("call detached: " + call);
+			logger.info("call detached: " + call);
 			attachedCalls.remove(call);
 			for(Iterator iter = listeners.iterator(); iter.hasNext(); ) {
 				ProviderListener listener = (ProviderListener) iter.next();
@@ -196,8 +196,13 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 			}			
 		}
 	}
-	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {}
-	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {}
+	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
+		logger.info("channelAdded: " + channel);
+	}
+	
+	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
+		logger.info("channelRemoved: " + channel);
+	}
 
 	public void drop(Call call) {
 		if(call instanceof SinglePartyCall) {
@@ -233,17 +238,25 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 		logger.info("monitor " +call);
 		
 		String monitoredChannel = null;
+		
 		if(call instanceof SinglePartyCall) {
 			SinglePartyCall spc = (SinglePartyCall) call;
 			monitoredChannel = spc.getChannel().getDescriptor().getId();
+			logger.info("spc monitoredChannel " +monitoredChannel);
+			
+			
 		} else if(call instanceof TwoPartiesCall) {
 			TwoPartiesCall tpc = (TwoPartiesCall) call;
-			monitoredChannel = tpc.getCallerChannel().getDescriptor().getId();		
+			monitoredChannel = tpc.getCallerChannel().getDescriptor().getId();	
+			logger.info("tpc monitoredChannel " +monitoredChannel);
+			
 		} else if(call instanceof ConferenceCall) {
-			ConferenceCall cc = (ConferenceCall) call;			
+			ConferenceCall cc = (ConferenceCall) call;	
+			
 			for(Iterator iter = cc.getChannels().iterator(); iter.hasNext();) {
 				Channel channel = (Channel) iter.next();
 				String channelId = channel.getDescriptor().getId(); 
+				logger.info("cc channel " + channelId);
 				if(channelId.startsWith("SIP/notetaker-")) {
 					monitoredChannel = channelId;		
 					break;
@@ -251,26 +264,29 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 			}
 		}
 		
-		System.out.println("monitoredChannel:" + monitoredChannel);
+		logger.info("monitoredChannel:" + monitoredChannel);
+		
 		StringBuffer fileName = new StringBuffer();
+		
 		if(call instanceof SinglePartyCall) {
 			SinglePartyCall spc = (SinglePartyCall) call;
-			fileName.append("singleparty_")
-				.append(spc.getId());			
+			fileName.append("singleparty_").append(spc.getId());
+			
 		} else if(call instanceof TwoPartiesCall) {
 			TwoPartiesCall tpc = (TwoPartiesCall) call;
-			fileName.append("twoparties_")
-				.append(tpc.getId());			
+			fileName.append("twoparties_").append(tpc.getId());
+			
 		} else if(call instanceof ConferenceCall) {
 			ConferenceCall cc = (ConferenceCall) call;
-			fileName.append("conference_")
-				.append(cc.getId());			
+			fileName.append("conference_").append(cc.getId());
+			
 		}
 		
 		MonitorAction monitorAction = new MonitorAction(monitoredChannel, 
-				"/var/recordings/" + fileName.toString(), "wav", Boolean.TRUE);
+				"/tmp/" + fileName.toString(), "wav", Boolean.TRUE);
 		try {
 			managerConnection.sendAction(monitorAction);
+			logger.info("send " + monitorAction);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
