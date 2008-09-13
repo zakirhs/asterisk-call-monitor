@@ -173,7 +173,7 @@ public class CallCostruction {
 					
 					if(newStateEvent.getUniqueId().equals(newExtenEvent.getUniqueId())){
 						
-						if(newExtenEvent.getApplication().equals("MeetMe")){
+						if(newExtenEvent.getApplication().equals("MeetMe") || newExtenEvent.getApplication().equals("AGI")){
 							waitState = WAIT_MEETMEJOIN;
 							eventStack.push(newStateEvent);
 							logger.info("WAIT_MEETMEJOIN  eventStack " + eventStack);
