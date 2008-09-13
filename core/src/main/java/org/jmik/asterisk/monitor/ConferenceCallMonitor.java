@@ -59,8 +59,14 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 	private int peerPort;
 	
 	public ConferenceCallMonitor(String myIP, int myPort, String peerIP, int peerPort) {
-		if(myIP == null) throw new IllegalArgumentException("myIP can not be null");
-		if(peerIP == null) throw new IllegalArgumentException("peerIP can not be null");
+		if(myIP == null){
+			logger.error("myIP null");
+			throw new IllegalArgumentException("myIP can not be null");
+		}
+		if(peerIP == null){
+			logger.error("peerIP null");
+			throw new IllegalArgumentException("myIP can not be null");
+		}
 		
 		this.myIP = myIP;
 		this.myPort = myPort;
@@ -71,8 +77,10 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 		try {
 			init();
 		} catch(Exception e) {
+			logger.error(e.getMessage(),e);
 			throw new RuntimeException(e);
 		}
+
 		logger.info(this);
 	}
 	
@@ -104,7 +112,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 		sipProvider = sipStack.createSipProvider(udpListeningPoint);	
 		sipProvider.addSipListener(this);
 		
-		logger.info("init()");
+		logger.info("init() " + sipProvider);
 	}
 	
 	public boolean isMonitored(String roomId) {
@@ -116,6 +124,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 	
 	public void monitorConference(String roomId) {
 		if(roomId == null) {
+			logger.error("monitorConference roomId null");
 			throw new IllegalArgumentException("roomId can not be null");
 		}
 		synchronized (noteTakers) {			
@@ -127,6 +136,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 	
 	public void unmonitorConference(String roomId) {
 		if(roomId == null) {
+			logger.error("unmonitorConference roomId null");
 			throw new IllegalArgumentException("roomId can not be null");
 		}
 		synchronized (noteTakers) {
@@ -151,6 +161,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 			}		
 		}			
 	}
+	
 	public void processRequest(RequestEvent requestEvent) {}
 	public void processTimeout(TimeoutEvent timeoutEvent) {}	
 
@@ -328,42 +339,60 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 		}
 	}
 
-	public void stateChanged(int oldState, Call call) {}
+	public void stateChanged(int oldState, Call call) {
+		logger.info("stateChanged " + call);
+		System.out.println("stateChanged " + call);
+	}
 	
 	public void channelRemoved(
-		ConferenceCall conferenceCall, Channel channel) {		
+		ConferenceCall conferenceCall, Channel channel) {
+		logger.info("channelRemoved " + channel);
 		//assume the only one left is the notetaker
 		if(conferenceCall.getChannels().size() == 1) {
 			unmonitorConference(conferenceCall.getRoomId());
+			System.out.println("unmonitorConference " + conferenceCall.getRoomId());
 		}
 	}
-	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {}	
+	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
+		logger.info("channelAdded " + channel);
+		System.out.println("channelAdded " + channel);
+	}	
 
 	public void callAttached(Call call) {
+		logger.info("callAttached " + call);
+		
 		if(call instanceof ConferenceCall) {
 			call.addListener(this);
+			
+			logger.info("callAttached " + call + " addListener " + this);
+			monitorConference(((ConferenceCall) call).getRoomId());
 		}
 	}
 	public void callDetached(Call call) {
+		logger.info("callDetached " + call);
+		
 		if(call instanceof ConferenceCall) {			
 			call.removeListener(this);			
 			ConferenceCall confCall = (ConferenceCall) call;
+			logger.info("callDetached " + confCall + " removeListener " + this);
+			unmonitorConference(((ConferenceCall) call).getRoomId());
 		}
 	}
 
 	public void processDialogTerminated(DialogTerminatedEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		logger.info("processDialogTerminated");
 	}
 
 	public void processIOException(IOExceptionEvent arg0) {
 		// TODO Auto-generated method stub
+		logger.info("processIOException");
 		
 	}
 
 	public void processTransactionTerminated(TransactionTerminatedEvent arg0) {
 		// TODO Auto-generated method stub
-		
+		logger.info("processTransactionTerminated");
 	}
 
 	

@@ -92,6 +92,7 @@ public class SinglePartyCallsJPanel extends JPanel implements PresentationModel.
 	public void fireMonitor(String callId) {
 //		provider.monitor(callId);
 		logger.info("todo fireMonitor " + callId);
+		
 	}
 	
 	public void fireDrop(String callId) {

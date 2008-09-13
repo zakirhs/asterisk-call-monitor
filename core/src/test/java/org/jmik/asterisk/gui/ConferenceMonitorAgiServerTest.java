@@ -12,6 +12,7 @@ public class ConferenceMonitorAgiServerTest {
 				"192.168.2.3", 4573, "192.168.2.3", 5038);
 		org.jmik.asterisk.monitor.ConferenceMonitorScript monitorScript = new org.jmik.asterisk.monitor.ConferenceMonitorScript(
 				conferenceMonitor);
+		conferenceMonitor.monitorConference("400");
 		ConferenceMonitorAgiServer agiServer = new ConferenceMonitorAgiServer(
 				monitorScript);
 		try {

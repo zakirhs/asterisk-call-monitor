@@ -9,7 +9,6 @@ import org.jmik.asterisk.model.impl.AsteriskProvider;
 import org.jmik.asterisk.model.impl.Call;
 import org.jmik.asterisk.model.impl.Channel;
 import org.jmik.asterisk.model.impl.ConferenceCall;
-import org.jmik.asterisk.monitor.ConferenceCallMonitor;
 
 
 public class PresentationModel {	
@@ -25,18 +24,31 @@ public class PresentationModel {
 	private int conferenceCall_selectedIndex;
 	
 	private AsteriskProvider asteriskProvider;
-	private List singlePartyCalls;
-	private List twoPartiesCalls;
-	private List conferenceCalls;
+	private List<Call> singlePartyCalls;
+	private List<Call> twoPartiesCalls;
+	private List<Call> conferenceCalls;
 	
-	private List listeners;
+	private List<PresentationModel.Listener> listeners;
 	
-	public PresentationModel( AsteriskProvider asteriskProvider, List singlePartyCalls, 
-		List twoPartiesCalls, List conferenceCalls) {
-		if(asteriskProvider == null) throw new IllegalArgumentException("asteriskProvider can not be null");
-		if(singlePartyCalls == null) throw new IllegalArgumentException("singlePartyCalls can not be null");
-		if(twoPartiesCalls == null) throw new IllegalArgumentException("twoPartiesCalls can not be null");
-		if(conferenceCalls == null) throw new IllegalArgumentException("conferenceCalls can not be null");
+	public PresentationModel( AsteriskProvider asteriskProvider, List<Call> singlePartyCalls, 
+		List<Call> twoPartiesCalls, List<Call> conferenceCalls) {
+		
+		if(asteriskProvider == null){ 
+			logger.error("asteriskProvider null");
+			throw new IllegalArgumentException("asteriskProvider can not be null");
+		}
+		if(singlePartyCalls == null){ 
+			logger.error("singlePartyCalls null");
+			throw new IllegalArgumentException("singlePartyCalls can not be null");
+		}
+		if(twoPartiesCalls == null){ 
+			logger.error("twoPartiesCalls null");
+			throw new IllegalArgumentException("twoPartiesCalls can not be null");
+		}
+		if(conferenceCalls == null){ 
+			logger.error("conferenceCalls null");
+			throw new IllegalArgumentException("conferenceCalls can not be null");
+		}
 		
 		this.asteriskProvider = asteriskProvider;
 		this.singlePartyCalls = singlePartyCalls;
@@ -47,19 +59,25 @@ public class PresentationModel {
 		twoPartiesCall_selectedIndex = -1;
 		conferenceCall_selectedIndex = -1;
 		
-		this.listeners = new ArrayList();
+		this.listeners = new ArrayList<PresentationModel.Listener>();
 		
-		logger.info(this);
+		logger.info("PresentationModel ready " + this);
 	}
 	
-	public void addListener(Listener listener) {
-		if(listener == null) throw new IllegalArgumentException("listener can not be null");
+	public void addListener(PresentationModel.Listener listener) {
+		if(listener == null){ 
+			logger.error("listener null");
+			throw new IllegalArgumentException("listener can not be null");
+		}
 		listeners.add(listener);
 		logger.info("addListener " + listener);
 	}
 	
 	public void removeListener(Listener listener) {
-		if(listener == null) throw new IllegalArgumentException("listener can not be null");
+		if(listener == null) {
+			logger.error("listener null");
+			throw new IllegalArgumentException("listener can not be null");
+		}
 		listeners.remove(listener);
 		logger.info("removeListener " + listener);
 	}
@@ -100,7 +118,8 @@ public class PresentationModel {
 			break;			
 		}
 		
-		asteriskProvider.drop(call); 		
+		asteriskProvider.drop(call); 
+		logger.info("dropButtonClicked drop " + call);
 	}
 
 	public boolean isMonitorButtonEnabled(int callType) {
@@ -189,17 +208,12 @@ public class PresentationModel {
 	}	
 
 	public void callAttached(Call call) {
-		
-		logger.info("callAttached " +call);
-		
 		for(Iterator iter = listeners.iterator(); iter.hasNext();) {
 			Listener listener = (Listener) iter.next();
 			listener.callAttached(this, call);
 			logger.info("notify callAttached to " + listener);
-
 		}
-
-		asteriskProvider.monitor(call);
+//		asteriskProvider.monitor(call);
 		
 	}
 	
