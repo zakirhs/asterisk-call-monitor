@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.jmik.asterisk.monitor.ConferenceCallMonitor;
 import org.jmik.asterisk.monitor.ConferenceMonitorAgiServer;
-//import org.jmik.asterisk.model.monitor.ConferenceMonitorScript;
 
 public class ConferenceMonitorAgiServerTest {
 

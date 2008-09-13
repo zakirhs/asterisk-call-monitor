@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.asteriskjava.manager.ManagerConnection;
-import org.asteriskjava.manager.ManagerEventListener;
 import org.jmik.asterisk.model.impl.Call;
 import org.jmik.asterisk.model.impl.CallCostruction;
 
@@ -13,7 +12,7 @@ import org.jmik.asterisk.model.impl.CallCostruction;
  * @author Michele La Porta
  *
  */
-public interface Provider extends ManagerEventListener{
+public interface Provider {
 
 	// TODO public void record(Call call)
 	

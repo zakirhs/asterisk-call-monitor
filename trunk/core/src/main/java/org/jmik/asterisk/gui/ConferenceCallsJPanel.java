@@ -16,6 +16,7 @@ import javax.swing.table.AbstractTableModel;
 import org.apache.log4j.Logger;
 import org.jmik.asterisk.model.Provider;
 import org.jmik.asterisk.model.impl.Call;
+import org.jmik.asterisk.model.impl.Channel;
 import org.jmik.asterisk.model.impl.ConferenceCall;
 import org.jmik.asterisk.model.impl.SinglePartyCall;
 import org.jmik.asterisk.model.impl.TwoPartiesCall;
@@ -92,12 +93,12 @@ public class ConferenceCallsJPanel extends JPanel implements PresentationModel.L
 	public void fireDataChanged(PresentationModel presentationModel,Call call,int type,boolean attached) {
 		logger.info("fireDataChanged=" + presentationModel +" type " +type);
 		
-		logger.info("singlePartyCall size = " + presentationModel.getCalls(Call.SINGLEPARTY_CALL).size());
+		logger.info("singlePartyCall size = " + presentationModel.getCalls(PresentationModel.CONFERENCE_CALLTYPE).size());
 		
 		if(conferenceCallTableModel.getRowCount() == 1 && attached){
 			
 			conferenceCallTableModel.setValueAt(call.getId(), 0, 0);
-			conferenceCallTableModel.setValueAt(call.getChannel().getDescriptor().getChannel(), 0, 1);
+			conferenceCallTableModel.setValueAt(call.getChannel().getDescriptor().getId(), 0, 1);
 			conferenceCallTableModel.setValueAt(call.getState(), 0, 2);
 			conferenceCallTableModel.setValueAt(call.getReasonForStateChange(), 0, 3);			
 		}else if(!attached){
@@ -210,6 +211,29 @@ public class ConferenceCallsJPanel extends JPanel implements PresentationModel.L
 			}
 			log.info("--------------------------");
 		}
+	}
+
+	public void callStateChanged(PresentationModel model, int oldState,
+			Call call) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void channelAdded(PresentationModel model,
+			ConferenceCall conferenceCall, Channel channel) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void channelRemoved(PresentationModel model,
+			ConferenceCall conferenceCall, Channel channel) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void refreshTable(int callType) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

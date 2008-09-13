@@ -39,14 +39,12 @@ public class Main implements ProviderListener, CallListener {
 
 	private static Logger logger = Logger.getLogger(Main.class);
 
-	private AsteriskProvider asteriskProvider;
-	
 	private static PresentationModel presentationModel;
 	private static ConferenceCallMonitor conferenceMonitor;
 	private static TwoPartiesMonitor twoPartiesMonitor;
 	private static SinglePartyMonitor singlePartyMonitor;
 
-	
+	private AsteriskProvider asteriskProvider;
 	private List<Call> conferenceCalls;
 	private List<Call> singlePartyCalls;
 	private List<Call> twoPartiesCalls;
@@ -84,12 +82,12 @@ public class Main implements ProviderListener, CallListener {
 		// 4 register AsteriskProvider as the handler of manager events
 		managerConnection.addEventListener(asteriskProvider);
 		
-		presentationModel = new PresentationModel();
-		
 		singlePartyCalls = new ArrayList<Call>();
 		twoPartiesCalls = new ArrayList<Call>();
 		conferenceCalls = new ArrayList<Call>();
-		
+
+		presentationModel = new PresentationModel(asteriskProvider,singlePartyCalls,twoPartiesCalls,conferenceCalls);
+
 	}
 
 	public void callAttached(Call call) {
@@ -101,7 +99,8 @@ public class Main implements ProviderListener, CallListener {
 			twoPartiesCalls.add(call);
 		}else if(call instanceof ConferenceCall){
 			conferenceCalls.add(call);
-		}
+			logger.info("ConferenceCall callAttached " + call);
+			}
 		call.addListener(this);
 		
 		presentationModel.callAttached(call);
@@ -120,27 +119,20 @@ public class Main implements ProviderListener, CallListener {
 			logger.info("callDetached " + conferenceCalls);
 		}
 		
-		presentationModel.callDetached(call);
+//		presentationModel.callDetached(call);
 		call.removeListener(this);
 	}
 
-	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelAdded conferenceCall " + conferenceCall +" oldState " +channel);
-		conferenceMonitor.channelAdded(conferenceCall, channel);
-	}
-	
-	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelRemoved conferenceCall " + conferenceCall +" oldState " +channel);
-		conferenceMonitor.channelRemoved(conferenceCall, channel);
-	}
 
-	public void stateChanged(int newState, Call call) {
-		logger.info("stateChanged " + call + " State " + call.getState() + " newState " + newState);
-		presentationModel.callStateChanged(newState, call);
+	public void stateChanged(int oldState, Call call) {
 		
-		if(newState == Call.INVALID_STATE) {
+		logger.info("stateChanged " + call + " State " + call.getState() + " oldState " + oldState);
+		
+		presentationModel.callStateChanged(oldState, call);
+		
+		if(call.getState() == Call.INVALID_STATE){
 			call.removeListener(this);
-			
+
 			if(call instanceof SinglePartyCall){
 				singlePartyCalls.remove(call);
 				logger.info("remove from singlePartyCalls");
@@ -152,10 +144,17 @@ public class Main implements ProviderListener, CallListener {
 				logger.info("remove from conferenceCalls");
 			}
 
-			presentationModel.callDetached(call);
+//			presentationModel.callDetached(call);
 		}
 	}
-
+	
+	
+	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
+		presentationModel.channelAdded(conferenceCall, channel);
+	}
+	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
+		presentationModel.channelRemoved(conferenceCall, channel);
+	}
 	public List<Call> getConferenceCalls() {
 		return conferenceCalls;
 	}
@@ -178,36 +177,34 @@ public class Main implements ProviderListener, CallListener {
 
 	public void run(final String host,final int port,final String confMonitorIp,final int confMonitorPort){
 
-		Thread singlePartyMonitorThread = new Thread(new Runnable() {
-			public void run() {
-				singlePartyMonitor = new SinglePartyMonitor(confMonitorIp,confMonitorPort,host,port);
-				asteriskProvider.addListener(singlePartyMonitor);
-//				SinglePartyMonitorScript singlePartyMonitorScript = new SinglePartyMonitorScript(
-//						singlePartyMonitor);
-//				SinglePartyMonitorAgiServer singlePartyMonitorAgiServer = new SinglePartyMonitorAgiServer(
-//						singlePartyMonitorScript);
-//				singlePartyMonitorAgiServer.run();
-			}
-		});
-		singlePartyMonitorThread.start();
-
-		Thread twoPartiesMonitorThread = new Thread(new Runnable() {
-			public void run() {
-				twoPartiesMonitor = new TwoPartiesMonitor(confMonitorIp,confMonitorPort,host,port);
-				asteriskProvider.addListener(twoPartiesMonitor);
-//				TwoPaMonitorScript singlePartyMonitorScript = new SinglePartyMonitorScript(
-//						singlePartyMonitor);
-//				TwoPartiesMonitorAgiServer twoPartiesMonitorAgiServer = new TwoPartiesMonitorAgiServer(
-//						twoPartiesMonitorScript);
-//				twoPartiesMonitorAgiServer.run();
-			}
-		});
-		twoPartiesMonitorThread.start();
+//		Thread singlePartyMonitorThread = new Thread(new Runnable() {
+//			public void run() {
+//				singlePartyMonitor = new SinglePartyMonitor(confMonitorIp,confMonitorPort,host,port);
+//				asteriskProvider.addListener(singlePartyMonitor);
+////				SinglePartyMonitorScript singlePartyMonitorScript = new SinglePartyMonitorScript(
+////						singlePartyMonitor);
+////				SinglePartyMonitorAgiServer singlePartyMonitorAgiServer = new SinglePartyMonitorAgiServer(
+////						singlePartyMonitorScript);
+////				singlePartyMonitorAgiServer.run();
+//			}
+//		});
+//		singlePartyMonitorThread.start();
+//
+//		Thread twoPartiesMonitorThread = new Thread(new Runnable() {
+//			public void run() {
+//				twoPartiesMonitor = new TwoPartiesMonitor(confMonitorIp,confMonitorPort,host,port);
+//				asteriskProvider.addListener(twoPartiesMonitor);
+////				TwoPaMonitorScript singlePartyMonitorScript = new SinglePartyMonitorScript(
+////						singlePartyMonitor);
+////				TwoPartiesMonitorAgiServer twoPartiesMonitorAgiServer = new TwoPartiesMonitorAgiServer(
+////						twoPartiesMonitorScript);
+////				twoPartiesMonitorAgiServer.run();
+//			}
+//		});
+//		twoPartiesMonitorThread.start();
 		
 		Thread conferenceMonitorThread = new Thread(new Runnable() {
 			public void run() {
-				conferenceMonitor = new ConferenceCallMonitor(confMonitorIp, confMonitorPort, host, port);
-				asteriskProvider.addListener(conferenceMonitor);	
 				
 				ConferenceMonitorScript monitorScript = new ConferenceMonitorScript(
 						conferenceMonitor);
@@ -222,7 +219,9 @@ public class Main implements ProviderListener, CallListener {
 				}			
 			}
 		});
+		logger.info("conferenceMonitorThread starting");
 		conferenceMonitorThread.start();
+//		logger.info("conferenceMonitorThread started");
 		
 	}
 
@@ -244,9 +243,9 @@ public class Main implements ProviderListener, CallListener {
 								System.out.println("main twopartiesCall " + mainFrame.getTwoPartiesCalls());
 								System.out.println("main conferenceCall " + mainFrame.getConferenceCalls());
 								System.out.println("main callconstuction " + mainFrame.getAsteriskProvider().getCallConstrutions());
-								System.out.println("singlePartyMonitor " + singlePartyMonitor.getSinglePartyCalls());
-								System.out.println("twoPartiesMonitor " + twoPartiesMonitor.getTwoPartiesCalls());
-								System.out.println("conferenceMonitor " + conferenceMonitor.getConferenceCalls());
+//								System.out.println("singlePartyMonitor " + singlePartyMonitor.getSinglePartyCalls());
+//								System.out.println("twoPartiesMonitor " + twoPartiesMonitor.getTwoPartiesCalls());
+//								System.out.println("conferenceMonitor " + conferenceMonitor.getConferenceCalls());
 							}else if(str.equals("help")){
 								System.out.println("usage\n");
 								System.out.println("print");
@@ -278,13 +277,14 @@ public class Main implements ProviderListener, CallListener {
 		});
 		mainThread.start();
 		
+		logger.info("ready");
 		//Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
-		javax.swing.SwingUtilities.invokeLater(new Runnable(){
-			public void run() {
-				frame.setVisible(true);
-			}
-		});
+//		javax.swing.SwingUtilities.invokeLater(new Runnable(){
+//			public void run() {
+//				frame.setVisible(true);
+//			}
+//		});
 	}
 
 }

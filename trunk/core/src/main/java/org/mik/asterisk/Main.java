@@ -42,7 +42,7 @@ public class Main implements ProviderListener, CallListener {
 		twoPartiesCalls = new ArrayList();
 		conferenceCalls = new ArrayList();		
 
-				// 1 open a connection to Asterisk
+		// 1 open a connection to Asterisk
 		ManagerConnectionFactory managerConnectionFactory = new ManagerConnectionFactory(host,port,userid,password);
 		ManagerConnection managerConnection = managerConnectionFactory.createManagerConnection();
 		asteriskProvider = new AsteriskProvider(managerConnection);
@@ -74,8 +74,9 @@ public class Main implements ProviderListener, CallListener {
 //		mgrConn.login();
 		
 		
-		presentationModel = new PresentationModel(asteriskProvider, singlePartyCalls, 
-			twoPartiesCalls, conferenceCalls);
+		presentationModel = new PresentationModel(asteriskProvider,
+				singlePartyCalls, twoPartiesCalls, conferenceCalls);
+		
 		ui = new AgiExp(presentationModel);		
 	}
 	
