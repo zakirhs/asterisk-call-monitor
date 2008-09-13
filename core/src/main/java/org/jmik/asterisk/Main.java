@@ -39,7 +39,7 @@ public class Main implements ProviderListener, CallListener {
 
 	private static Logger logger = Logger.getLogger(Main.class);
 
-	private static PresentationModel presentationModel;
+//	private static PresentationModel presentationModel;
 	private static ConferenceCallMonitor conferenceMonitor;
 	private static TwoPartiesMonitor twoPartiesMonitor;
 	private static SinglePartyMonitor singlePartyMonitor;
@@ -86,7 +86,7 @@ public class Main implements ProviderListener, CallListener {
 		twoPartiesCalls = new ArrayList<Call>();
 		conferenceCalls = new ArrayList<Call>();
 
-		presentationModel = new PresentationModel(asteriskProvider,singlePartyCalls,twoPartiesCalls,conferenceCalls);
+//		presentationModel = new PresentationModel(asteriskProvider,singlePartyCalls,twoPartiesCalls,conferenceCalls);
 
 	}
 
@@ -103,7 +103,7 @@ public class Main implements ProviderListener, CallListener {
 			}
 		call.addListener(this);
 		
-		presentationModel.callAttached(call);
+//		presentationModel.callAttached(call);
 	}
 	
 	public void callDetached(Call call) {
@@ -128,7 +128,7 @@ public class Main implements ProviderListener, CallListener {
 		
 		logger.info("stateChanged " + call + " State " + call.getState() + " oldState " + oldState);
 		
-		presentationModel.callStateChanged(oldState, call);
+//		presentationModel.callStateChanged(oldState, call);
 		
 		if(call.getState() == Call.INVALID_STATE){
 			call.removeListener(this);
@@ -150,10 +150,10 @@ public class Main implements ProviderListener, CallListener {
 	
 	
 	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
-		presentationModel.channelAdded(conferenceCall, channel);
+//		presentationModel.channelAdded(conferenceCall, channel);
 	}
 	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
-		presentationModel.channelRemoved(conferenceCall, channel);
+//		presentationModel.channelRemoved(conferenceCall, channel);
 	}
 	public List<Call> getConferenceCalls() {
 		return conferenceCalls;
@@ -167,9 +167,9 @@ public class Main implements ProviderListener, CallListener {
 		return twoPartiesCalls;
 	}
 
-	public PresentationModel getPresentationModel() {
-		return presentationModel;
-	}
+//	public PresentationModel getPresentationModel() {
+//		return presentationModel;
+//	}
 
 	public Provider getAsteriskProvider() {
 		return asteriskProvider;
@@ -262,20 +262,20 @@ public class Main implements ProviderListener, CallListener {
 		});
 		inputThread.start();
 
-		final JFrame frame = new AgiExp(presentationModel,mainFrame.getAsteriskProvider());
-		
-		Thread mainThread  = new Thread(new Runnable(){		
-			public void run() {
-				try {
-					mainFrame.run(Constants.asteriskIpAddress,Constants.asteriskPort, Constants.conferenceMonitorIpAddress, Constants.conferenceMonitorPort);
-					
-				} catch (Exception e) {
-					JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
-					System.exit(-1);
-				}
-			}
-		});
-		mainThread.start();
+//		final JFrame frame = new AgiExp(presentationModel,mainFrame.getAsteriskProvider());
+//		
+//		Thread mainThread  = new Thread(new Runnable(){		
+//			public void run() {
+//				try {
+//					mainFrame.run(Constants.asteriskIpAddress,Constants.asteriskPort, Constants.conferenceMonitorIpAddress, Constants.conferenceMonitorPort);
+//					
+//				} catch (Exception e) {
+//					JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
+//					System.exit(-1);
+//				}
+//			}
+//		});
+//		mainThread.start();
 		
 		logger.info("ready");
 		//Schedule a job for the event-dispatching thread:

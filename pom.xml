@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jmik</groupId>
 	<artifactId>asterisk-call-monitor</artifactId>
 	<version>1.0.0.BETA1</version>
 	<name>asterisk-call-monitor</name>
 	<packaging>pom</packaging>
-	
+
 	<modules>
 		<module>core</module>
 	</modules>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -23,10 +25,9 @@
 					<debug>true</debug>
 				</configuration>
 			</plugin>
-			
 		</plugins>
 	</build>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -43,7 +44,7 @@
 				<groupId>javax.sip</groupId>
 				<artifactId>jain-sip-ri</artifactId>
 				<version>1.2.1</version>
-			</dependency>	
+			</dependency>
 			<dependency>
 				<groupId>net.java.dev.swing-layout</groupId>
 				<artifactId>swing-layout</artifactId>
@@ -54,7 +55,7 @@
 				<artifactId>log4j</artifactId>
 				<version>1.2.8</version>
 			</dependency>
-		</dependencies>			
+		</dependencies>
 	</dependencyManagement>
 
 	<reporting>
@@ -66,9 +67,9 @@
 				<configuration>
 					<outputEncoding>utf-8</outputEncoding>
 					<!--  <locales>en,it</locales>-->
-			       </configuration>
+				</configuration>
 			</plugin>
 		</plugins>
 	</reporting>
-	
+
 </project>

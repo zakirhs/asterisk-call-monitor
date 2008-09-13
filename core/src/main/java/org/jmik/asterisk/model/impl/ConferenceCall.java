@@ -32,7 +32,6 @@ public class ConferenceCall extends Call {
 	private static Logger logger = Logger.getLogger(ConferenceCall.class);
 
 	private Map<Channel.Descriptor, Channel> channels;
-	// private java.util.Set<Descriptor> channelDescriptors;
 	private String roomId;
 
 	public ConferenceCall(String roomId, Date date, Descriptor channelDesc) {

@@ -21,15 +21,16 @@ public class CallEndpoint {
 			throw new IllegalArgumentException("id can not be null");
 		}
 		this.id = id;
+		logger.info("CallEndpoint " + id);
 	}
 
 	public String getId() {
 		return id;
 	}
 
-	@Override
-	public String toString() {
-		return super.toString() + "[" + id + "]";
-	}
+//	@Override
+//	public String toString() {
+//		return super.toString() + "[" + id + "]";
+//	}
 
 }

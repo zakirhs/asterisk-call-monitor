@@ -242,11 +242,14 @@ public class CallCostruction {
 						Call attachedCall = (Call) iter.next();
 						if(attachedCall instanceof ConferenceCall) {								
 							ConferenceCall confCall = (ConferenceCall) attachedCall;						
+							logger.info("existing confCall " + confCall);
+							
 							if(confCall.getRoomId().equals(roomId)) {
 								confCallExist = true;							
-								Channel.Descriptor newChannelDesc = new Channel.Descriptor(nce.getChannel(), 
+								Channel.Descriptor newChannelDescritor = new Channel.Descriptor(nce.getChannel(), 
 									nce.getDateReceived(), new CallEndpoint(nee.getExtension()));
-								confCall.addChannel(newChannelDesc);							
+								logger.info(newChannelDescritor);
+								confCall.addChannel(newChannelDescritor);							
 								provider.removeCallConstruction(this);
 								logger.info("confCallExist removeCallConstruction " + this);
 								return true;
@@ -254,14 +257,26 @@ public class CallCostruction {
 						}
 					}	
 					
-					if(!confCallExist) {					
+					if(!confCallExist) {
+						
+//						logger.info("nce.getChannel() " + nce.getChannel() );
+//						logger.info("nee.getExtension() " + nee.getExtension() );
+						
 						Channel.Descriptor channelDesc = new Channel.Descriptor(nce.getChannel(), 
-							nce.getDateReceived(), new CallEndpoint(nee.getExtension()));					
-						ConferenceCall confCall = new ConferenceCall(roomId, mmje.getDateReceived(), channelDesc);
+							nce.getDateReceived(), new CallEndpoint(nee.getExtension()));
+//						logger.info("channelDesc " + channelDesc );
+//						logger.info("channelDesc " + channelDesc.getId() );
+//						logger.info("channelDesc " + channelDesc.getEndpoint() );
+//						logger.info("channelDesc " + channelDesc.getEndpoint().getId() );
+//						logger.info("channelDesc " + channelDesc.getCreationTime());
+//						
+//						logger.info("mmje.getDateReceived() " + mmje.getDateReceived() );
+						
+						ConferenceCall conferenceCall = new ConferenceCall(roomId, mmje.getDateReceived(), channelDesc);
 						provider.removeCallConstruction(this);
-						logger.info("ConferenceCall removeCallConstruction " + this);
-						provider.attachCall(confCall);
-						logger.info("ConferenceCall attachCall " + confCall);
+//						logger.info("ConferenceCall removeCallConstruction " + this);
+						logger.info("ConferenceCall attaching " + conferenceCall);
+						provider.attachCall(conferenceCall);
 						return true;					
 					} 
 				}				

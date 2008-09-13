@@ -54,10 +54,18 @@ public class Call{
 
 
 	public Call(String id, Date creationTime, int state) {
-		if (id == null)
+
+		logger.info("id " +id);
+		logger.info("creationTime " + creationTime);
+
+		if (id == null){
+			logger.error("id is null");
 			throw new IllegalArgumentException("id cannot be null");
-		if (creationTime == null)
-			throw new IllegalArgumentException("creationTime cannot be null");	
+		}
+		if (creationTime == null){
+			logger.error("creationTime is null");
+			throw new IllegalArgumentException("creationTime cannot be null");
+		}
 		
 		listeners = new LinkedHashSet<CallListener>();
 //		providerListeners = new HashSet<ProviderListener>();
@@ -69,7 +77,7 @@ public class Call{
 		this.creationTime = creationTime;
 		this.id = id;
 		this.state = state;
-//		logger.info("Call state " + this.state);
+		logger.info("Call " + this + "state " + this.state);
 	}
 
 	public void setProvider(Provider provider) {
@@ -153,15 +161,15 @@ public class Call{
 //		}
 	}
 
-	@Override
-	public String toString() {
-		StringBuffer st = new StringBuffer()
-		.append(this.getClass().getSimpleName()+"@"+this.hashCode()+ "[channel="+channel.getDescriptor().getId() +",state="+state+",reasonForStateChange=" + reasonForStateChange + ",listeners="+listeners+"]");
-		return st.toString();
-	}
-	
-	@Override
-	public int hashCode() {
-		return super.hashCode();
-	}
+//	@Override
+//	public String toString() {
+//		StringBuffer st = new StringBuffer()
+//		.append(this.getClass().getSimpleName()+"@"+this.hashCode()+ "[channel="+channel.getDescriptor().getId() +",state="+state+",reasonForStateChange=" + reasonForStateChange + ",listeners="+listeners+"]");
+//		return st.toString();
+//	}
+//	
+//	@Override
+//	public int hashCode() {
+//		return super.hashCode();
+//	}
 }

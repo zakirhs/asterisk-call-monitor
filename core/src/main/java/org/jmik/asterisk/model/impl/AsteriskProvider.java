@@ -110,6 +110,8 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 	}
 
 	public void attachCall(Call call) {
+		logger.info("attachCall  " + attachedCalls);
+		logger.info("attachCall  " + call);
 		
 		this.attachedCalls.add(call);
 		logger.info("attachedCalls size " + attachedCalls.size() + " " + attachedCalls);
