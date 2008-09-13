@@ -50,13 +50,19 @@ public class Channel {
 		private CallEndpoint endpoint;
 
 		public Descriptor(String id, Date creationTime, CallEndpoint endpoint) {
-			if (id == null)
+			if (id == null){
+				logger.error("id is null");
 				throw new IllegalArgumentException("id cannot be null");
-			if (creationTime == null)
+			}
+			if (creationTime == null){
+				logger.error("creationTime is null");
 				throw new IllegalArgumentException(
 						"creationTime cannot be null");
-			if (endpoint == null)
+			}
+			if (endpoint == null){
+				logger.error("endpoint is null");
 				throw new IllegalArgumentException("endpoint cannot be null");
+			}
 
 			this.id = id;
 			this.creationTime = creationTime;
@@ -120,10 +126,10 @@ public class Channel {
 	// (int)this.getDescriptor().getCreationTime().getTime();
 	// return result;
 	// }
-	 @Override
-	 public String toString() {
-	 return
-	 super.toString()+"[id="+this.getDescriptor().getId()+"]";
-	 }
+//	 @Override
+//	 public String toString() {
+//	 return
+//	 super.toString()+"[id="+this.getDescriptor().getId()+"]";
+//	 }
 
 }
