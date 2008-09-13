@@ -22,7 +22,12 @@ public class ConferenceMonitorScript extends BaseAgiScript{
 	 * @param conferenceMonitor
 	 */
 	public ConferenceMonitorScript(ConferenceCallMonitor conferenceMonitor) {
+		if(conferenceMonitor == null){
+			logger.error("conferenceMonitor null");
+		}
+		
 		this.conferenceMonitor = conferenceMonitor;
+		logger.info(this);
 	}
 	
 	/* (non-Javadoc)
@@ -30,7 +35,7 @@ public class ConferenceMonitorScript extends BaseAgiScript{
 	 */
 	public void service(AgiRequest agiRequest,AgiChannel agiChannel){
 		String roomId = agiRequest.getParameter("roomId");
-		logger.info("roomId " +roomId);
+		logger.info("roomId " +roomId  + " monitored " + conferenceMonitor.isMonitored(roomId));
 		if(conferenceMonitor.isMonitored(roomId)){
 			logger.info(roomId + " not monitored");
 			conferenceMonitor.monitorConference(roomId);

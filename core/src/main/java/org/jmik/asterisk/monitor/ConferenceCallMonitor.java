@@ -116,8 +116,10 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 	}
 	
 	public boolean isMonitored(String roomId) {
-		logger.info("isMonitored roomId " + roomId);
 		synchronized (noteTakers) {
+			boolean monitorExists = noteTakers.containsKey(roomId);
+			logger.info("roomId " + roomId + " is monitored " + monitorExists);
+			
 			return noteTakers.containsKey(roomId);
 		}		
 	}
@@ -131,6 +133,8 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 			NoteTaker noteTaker = new NoteTaker(roomId);
 			noteTaker.joinConference();
 			noteTakers.put(roomId, noteTaker);
+			logger.info("add " +noteTakers);
+			
 		}
 	}
 	
@@ -257,9 +261,13 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 				// Create the client transaction.
 				ClientTransaction inviteTid = sipProvider.getNewClientTransaction(request);
 				// send the request out.
+				
+				log.info("joinConference invite \n----------------------------------------------------------------------\n"
+						+request+"\n-------------------------------------------------------------------------\n");
+
 				inviteTid.sendRequest();
 				
-				log.info("joinConference invite \n"+request);
+				log.info("joinConference invite sent ");
 				
 			} catch(Exception e) {
 				throw new RuntimeException(e);
