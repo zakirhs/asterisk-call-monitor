@@ -1,0 +1,72 @@
+Welcome
+
+	AsteriskCallManager
+
+Goals:
+
+	Provide an Asterisk Call Manager.
+
+Current Version:
+
+	1.0.0.BETA1
+
+Licence:
+
+	We have chosen the business-friendly LGPL as our main license to ensure that you can safely use them to develop and deploy applications whilst keeping your source code private.  You may even keep changes made to the project source code private as long as you do not distribute the resulting binaries.
+
+SinglePartyCall Events Flow:
+
++-----------------------------------------------------------------------------------------------------------------+
+NewChannelEvent[state='Down']
+NewStateEvent  [state='Ring']
+NewExtenEvent  [application='Playback']
+NewStateEvent  [state='Up']
+NewExtenEvent  [extension='600',appdata='null',context='default',,priority='2',application='Echo']
+NewExtenEvent  [extension='600',appdata='demo-echodone',context='default',,priority='3',application='Playback']
+NewExtenEvent  [extension='600',appdata='s|6',context='default',,priority='4',application='Goto']
+NewExtenEvent  [extension='s',appdata='demo-instruct',context='default',,priority='6',application='BackGround'
+HangupEvent    [causetxt='Unknown',calleridname='null',cause='0',calleridnum='null',callerid='null',state='null']
++-----------------------------------------------------------------------------------------------------------------+
+
+TwoPartiesCall Events Flow:
+
++-----------------------------------------------------------------------------------------------------------------+
+NewChannelEvent	 [state='Down',channel='SIP/johndoe-08edd228']
+NewStateEvent    [state='Ring',channel='SIP/johndoe-08edd228']
+NewExtenEvent  	 [application='Dial',extension='666',appdata='SIP/goldenboy',channel='SIP/johndoe-08edd228']
+NewChannelEvent	 [state='Down',channel='SIP/goldenboy-08ee2c70']
+DialEvent      	 [src='SIP/johndoe-08edd228',destination='SIP/goldenboy-08ee2c70']
+NewCallerIdEvent [channel='SIP/goldenboy-08ee2c70']
+NewStateEvent    [state='Ringing',channel='SIP/goldenboy-08ee2c70']
+NewStateEvent    [state='Up',channel='SIP/goldenboy-08ee2c70']
+NewStateEvent    [state='Up',channel='SIP/johndoe-08edd228']
+LinkEvent	 [channel1='SIP/johndoe-08edd228',channel2='SIP/goldenboy-08ee2c70']
+UnlinkEvent   	 [channel1='SIP/johndoe-08edd228',channel2='SIP/goldenboy-08ee2c70']
+HangupEvent	 [cause='16',channel='SIP/goldenboy-08ee2c70']
+HangupEvent	 [cause='16',channel='SIP/johndoe-08edd228']
++-----------------------------------------------------------------------------------------------------------------+
+
+ConferenceCall Events FLow;
+
++-----------------------------------------------------------------------------------------------------------------+
+NewChannelEvent[state='Down',channel='SIP/goldenboy-09427638',26828160]
+NewStateEvent[state='Ring',channel='SIP/goldenboy-09427638',29997514]
+NewExtenEvent[application='MeetMe',extension='5400',appdata='400|i',channel='SIP/goldenboy-09427638',priority='1']
+NewStateEvent[uniqueid='1220712004.7',state='Up',channel='SIP/goldenboy-09427638']
+NewChannelEvent[state='Rsrvd',channel='Zap/pseudo-1473519971']
+MeetMeJoinEvent[meetme='400',channel='SIP/goldenboy-09427638']
+NewChannelEvent[state='Down',channel='SIP/johndoe-09431fd8',5799060]
+NewStateEvent[state='Ring',channel='SIP/johndoe-09431fd8',32134769]
+NewExtenEvent[extension='5400',appdata='400|i',channel='SIP/johndoe-09431fd8',priority='1',application='MeetMe']
+NewStateEvent[state='Up',channel='SIP/johndoe-09431fd8',32745991]
+MeetMeJoinEvent[meetme='400',channel='SIP/johndoe-09431fd8']
+MeetMeLeaveEvent[meetme='400',channel='SIP/johndoe-09431fd8']
+HangupEvent[channel='SIP/johndoe-09431fd8',7359402]
+MeetMeLeaveEvent[channel='SIP/goldenboy-09427638']
+HangupEvent[channel='Zap/pseudo-1473519971',8452719]
+HangupEvent[channel='SIP/goldenboy-09427638',8789796]
++-----------------------------------------------------------------------------------------------------------------+
+
+
+	
+	
