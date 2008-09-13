@@ -15,6 +15,7 @@ import org.jmik.asterisk.gui.SinglePartyCallsJPanel;
 import org.jmik.asterisk.gui.TwoPartiesCallsJPanel;
 import org.jmik.asterisk.model.Provider;
 import org.jmik.asterisk.model.impl.Call;
+import org.jmik.asterisk.model.impl.Channel;
 import org.jmik.asterisk.model.impl.ConferenceCall;
 import org.jmik.asterisk.model.impl.SinglePartyCall;
 import org.jmik.asterisk.model.impl.TwoPartiesCall;
@@ -80,21 +81,21 @@ public class AgiExp extends JFrame implements PresentationModel.Listener, Change
 
 			PresentationModel pm = (PresentationModel)model;
 
-			if(type == Call.SINGLEPARTY_CALL ){
-				for(PresentationModel.Listener presentationModelListener : pm.getListeners()){
-		//			singlePartyPresentationModelImpl.fireTableDataChanged();//(singlePartyCallsJPanel.getSinglePartyTableModel())
-					logger.info("fireTableDataChanged " + presentationModelListener + " " + pm.getCalls(Call.SINGLEPARTY_CALL));
-//					presentationModellisteners.callAttached(pm, call)
-				}
-				
-				
-			}else if(type == Call.TWOPARTIES_CALL ){
-				logger.info("fireTableDataChanged " +pm.getCalls(Call.SINGLEPARTY_CALL));
-				
-			}else if(type == Call.CONFERENCE_CALL ){
-				logger.info("fireTableDataChanged " +pm.getCalls(Call.SINGLEPARTY_CALL));
-				
-			}
+//			if(type == Call.SINGLEPARTY_CALL ){
+//				for(PresentationModel.Listener presentationModelListener : pm.getListeners()){
+//		//			singlePartyPresentationModelImpl.fireTableDataChanged();//(singlePartyCallsJPanel.getSinglePartyTableModel())
+//					logger.info("fireTableDataChanged " + presentationModelListener + " " + pm.getCalls(Call.SINGLEPARTY_CALL));
+////					presentationModellisteners.callAttached(pm, call)
+//				}
+//				
+//				
+//			}else if(type == Call.TWOPARTIES_CALL ){
+//				logger.info("fireTableDataChanged " +pm.getCalls(Call.SINGLEPARTY_CALL));
+//				
+//			}else if(type == Call.CONFERENCE_CALL ){
+//				logger.info("fireTableDataChanged " +pm.getCalls(Call.SINGLEPARTY_CALL));
+//				
+//			}
 		}
 		
 	}
@@ -276,6 +277,29 @@ public class AgiExp extends JFrame implements PresentationModel.Listener, Change
 
 	public ConferenceCallsJPanel getConferenceCallsJPanel() {
 		return conferenceCallsJPanel;
+	}
+
+	public void callStateChanged(PresentationModel model, int oldState,
+			Call call) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void channelAdded(PresentationModel model,
+			ConferenceCall conferenceCall, Channel channel) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void channelRemoved(PresentationModel model,
+			ConferenceCall conferenceCall, Channel channel) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void refreshTable(int callType) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	

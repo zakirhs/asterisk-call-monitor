@@ -1,18 +1,13 @@
 package org.jmik.asterisk.model.impl;
 
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.log4j.Logger;
 import org.asteriskjava.manager.event.ManagerEvent;
 import org.jmik.asterisk.model.CallListener;
-import org.jmik.asterisk.model.ProviderListener;
-import org.jmik.asterisk.model.impl.Channel.Descriptor;
+import org.jmik.asterisk.model.Provider;
 
 /**
  * This class rappresents a telephone call,the information flowing
@@ -23,88 +18,80 @@ import org.jmik.asterisk.model.impl.Channel.Descriptor;
  * @author Michele La Porta
  *
  */
-public abstract class Call{
+public class Call{
 
 	protected static Logger logger = Logger.getLogger(Call.class);
 
-	public static final int SINGLEPARTY_CALL = 0;
-	public static final int TWOPARTIES_CALL = 1;
-	public static final int CONFERENCE_CALL = 2;
+//	public static final int SINGLEPARTY_CALL = 0;
+//	public static final int TWOPARTIES_CALL = 1;
+//	public static final int CONFERENCE_CALL = 2;
 
-     
-
-	// This is the initial state for all Calls. In this state, the Call Call has zero Connections.
 	public static final int IDLE_STATE = 0;
-
-	//public static final int IN_PROGRESS = 0;
-	//public static final int ALERT = 0;
-
 	public static final int CONNECTING_STATE = 1;
-	
-	// A Call with some current ongoing activity is in this state.
 	public static final int ACTIVE_STATE = 2;
-
-	// RINGING --> ACTIVE / PASSIVE --> DROPPED
-	// MEDIA ENDPOINT HELD / CLOSED
-
-	// This is the final state for all Calls
-	public static final int INVALID_STATE = 3;
-
-	protected int state;
-	protected int reasonForStateChange;
+	public static final int INVALID_STATE = -1;
 
 	protected String id;
+	protected Provider provider;
+	
 	protected java.util.Date creationTime;
 	protected java.util.Date invalidationTime;
+	protected int state;
+	protected String reasonForStateChange;
+	
 	protected Channel channel;
 	
 	protected Set<CallListener> listeners;
-	protected Set<ProviderListener> providerListeners;
+//	protected Set<ProviderListener> providerListeners;
 	//java.util.concurrent.CopyOnWriteArraySet
-	private ReadWriteLock globalLock;
-	private Lock readLock;
-	private Lock writeLock;
+//	private ReadWriteLock globalLock;
+//	private Lock readLock;
+//	private Lock writeLock;
+	
+	Call() {
+		state = INVALID_STATE;
+	}
 
-	public Call(String callId,Date date,int state,Descriptor descriptor) {
+
+	public Call(String id, Date creationTime, int state) {
+		if (id == null)
+			throw new IllegalArgumentException("id cannot be null");
+		if (creationTime == null)
+			throw new IllegalArgumentException("creationTime cannot be null");	
 		
-		listeners = new HashSet<CallListener>();
-		providerListeners = new HashSet<ProviderListener>();
-		globalLock = new ReentrantReadWriteLock();
-		readLock = globalLock.readLock();
-		writeLock = globalLock.writeLock();
+		listeners = new LinkedHashSet<CallListener>();
+//		providerListeners = new HashSet<ProviderListener>();
+//		globalLock = new ReentrantReadWriteLock();
+//		readLock = globalLock.readLock();
+//		writeLock = globalLock.writeLock();
 		
-		channel = new Channel(descriptor);
-		creationTime = date;
-		this.id = callId;
+//		channel = new Channel(descriptor);
+		this.creationTime = creationTime;
+		this.id = id;
 		this.state = state;
-		logger.info("Call state " + this.state);
+//		logger.info("Call state " + this.state);
 	}
 
-	public abstract boolean process(ManagerEvent event);
-
-	protected abstract void setState(int state,String reasonForStateChange) ;
-
-	public void stateChanged(int oldState,Call call){
-		writeLock.lock();
-		try{
-			logger.info("stateChanged " + call + " oldState " + oldState + " newState " + call.getState());
-			CopyOnWriteArraySet<CallListener> copyOnWriteArraySet = new CopyOnWriteArraySet<CallListener>(listeners);
-			for(CallListener callListener : copyOnWriteArraySet){
-				callListener.stateChanged(oldState, call);
-			}
-			/*if(call.getState() == Call.INVALID_STATE){
-				CopyOnWriteArraySet<ProviderListener> copyOnWriteArraySet2 = new CopyOnWriteArraySet<ProviderListener>(providerListeners);
-				
-				for(ProviderListener providerListener : copyOnWriteArraySet2){
-					providerListener.callDetached(call);
-				}
-			}*/
-			
-		}finally {
-			writeLock.unlock();
-		}
+	public void setProvider(Provider provider) {
+		if(provider == null) throw new IllegalArgumentException("provider can not be null");
+		if(state == INVALID_STATE) throw new IllegalStateException("can not attach call in INVALID state.");
+		this.provider = provider;
 	}
 
+
+	protected void setState(int state, String reasonForStateChange) {
+		int oldState = this.state;
+		this.state = state;
+		this.reasonForStateChange = reasonForStateChange;
+		logger.info("setState listeners size " + listeners.size() + " " + listeners);
+		for(CallListener callListener : new LinkedHashSet<CallListener>(listeners))
+			callListener.stateChanged(oldState, this);
+	}
+
+	public boolean process(ManagerEvent event) {
+    	return false;
+    }
+	
 	public String getId() {
 		return id;
 	}
@@ -125,11 +112,11 @@ public abstract class Call{
 		return state;
 	}
 
-	public int getReasonForStateChange() {
+	public String getReasonForStateChange() {
 		return reasonForStateChange;
 	}
 
-	public void setReasonForStateChange(int reasonForStateChange) {
+	public void setReasonForStateChange(String reasonForStateChange) {
 		this.reasonForStateChange = reasonForStateChange;
 	}
 
@@ -137,33 +124,33 @@ public abstract class Call{
 		return channel;
 	}
 
-	public Set<CallListener> getListeners() {
-		readLock.lock();
-		try {
-			return this.listeners;
-		} finally {
-			readLock.unlock();
-		}
-	}
+//	public Set<CallListener> getListeners() {
+//		readLock.lock();
+//		try {
+//			return this.listeners;
+//		} finally {
+//			readLock.unlock();
+//		}
+//	}
 
 	public void addListener(CallListener listener) {
-		writeLock.lock();
-		try {
+//		writeLock.lock();
+//		try {
 			listeners.add(listener);
 			logger.info("addListener " + listeners);
-		} finally {
-			writeLock.unlock();
-		}
+//		} finally {
+//			writeLock.unlock();
+//		}
 	}
 
 	public void removeListener(CallListener listener){
-		writeLock.lock();
-		try {
+//		writeLock.lock();
+//		try {
 			listeners.remove(listener);
 			logger.info("removeListener " + listeners);
-		} finally {
-			writeLock.unlock();
-		}
+//		} finally {
+//			writeLock.unlock();
+//		}
 	}
 
 	@Override

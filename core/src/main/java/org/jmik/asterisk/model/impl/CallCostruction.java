@@ -1,5 +1,6 @@
 package org.jmik.asterisk.model.impl;
 
+import java.util.Iterator;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
@@ -26,22 +27,33 @@ public class CallCostruction {
 
 	private static Logger logger = Logger.getLogger(CallCostruction.class);
 
-	public static final int WAIT_NEW_EXT = 0;
-	public static final int WAIT_NEW_STATE_UP = 1;
-	public static final int WAIT_MEETMEJOIN = 2;
+	public static final int WAIT_NEW_EXT = 1;
+	public static final int WAIT_NEW_STATE_UP = 3;
+	public static final int WAIT_MEETMEJOIN = 4;
 
-	private int waitState = -1;
+	private int waitState;
 	private Provider provider;
 	public Stack<ManagerEvent> eventStack = new Stack<ManagerEvent>();
 	
 	public CallCostruction(Provider provider,NewChannelEvent newChannelEvent){
-		if(provider == null) throw new IllegalArgumentException("provider can not be null");
-		if(newChannelEvent == null) throw new IllegalArgumentException("newChannelEvent can not be null");
-		if("Ring".equals(newChannelEvent.getState()) == false) throw new IllegalArgumentException("the state of the nce must be Ring");
+		if(provider == null){
+			logger.error("provider " + provider);
+			throw new IllegalArgumentException("provider can not be null");
+		}
+		if(newChannelEvent == null){
+			logger.error("newChannelEvent " + newChannelEvent);
+			throw new IllegalArgumentException("newChannelEvent can not be null");
+		}
+		if("Down".equals(newChannelEvent.getState()) == false){
+			logger.error("newChannelEvent Ring? " + newChannelEvent.getState());
+			throw new IllegalArgumentException("the state of the nce must be Ring");
+		}
 		
 		this.provider = provider;
 		waitState = WAIT_NEW_EXT;
 		eventStack.push(newChannelEvent);
+		logger.info(this + " " + newChannelEvent);
+		
 	}
 
 	public boolean processEvent(ManagerEvent event){
@@ -59,49 +71,95 @@ public class CallCostruction {
 					NewChannelEvent newChannelEvent = (NewChannelEvent)eventStack.peek();
 					
 					if(newExtenEvent.getUniqueId().equals(newChannelEvent.getUniqueId())){
-
-						if(newExtenEvent.getApplication().equals("Dial")){
+						logger.info("match " +("Dial".equals(newExtenEvent.getApplication())));
+						
+						if(newExtenEvent.getApplication().equals("Dial")) {						
+							newChannelEvent = (NewChannelEvent) eventStack.pop();						
+							logger.info("popped newChannelEvent " + newChannelEvent);
 							
-							newChannelEvent = (NewChannelEvent)eventStack.pop();
+							String callId = newExtenEvent.getContext() + "|" + newChannelEvent.getCallerId() + "|" 
+								+ newExtenEvent.getExtension() + "|" + DateFormatter.format(newChannelEvent.getDateReceived());
+							logger.info("popped newChannelEvent callId " + callId);
 							
-							//default|johndoe|666|Sat Sep 06 17:48:35 CEST 2008
-							String callId = newExtenEvent.getContext()
-								+ "|" + newChannelEvent.getCallerId()
-								+ "|" + newExtenEvent.getExtension()
-								+ "|" + DateFormatter.format(newChannelEvent
-										.getDateReceived());
+							Channel.Descriptor dialingChannelDesc = new Channel.Descriptor(newChannelEvent.getChannel(), 
+									newChannelEvent.getDateReceived(), new CallEndpoint(newChannelEvent.getCallerId()));
+							logger.info("dialingChannelDesc " + dialingChannelDesc);
 							
-							logger.info("callId:" + callId);
+							Channel.Descriptor dialedChannelDesc = new Channel.Descriptor(
+								new CallEndpoint(newExtenEvent.getExtension())); 
+							logger.info("dialedChannelDesc " + dialedChannelDesc);
+							logger.info("dialedChannelDesc Extension " + newExtenEvent.getExtension());
 							
-							Channel.Descriptor callerChannelDescriptor = new Channel.Descriptor(
-								newChannelEvent.getChannel(), newChannelEvent
-										.getDateReceived(), new CallEndpoint(newExtenEvent.getExtension()));
-							
-							logger.info("caller:" + callerChannelDescriptor);
-							
-							Channel.Descriptor calledChannelDescriptor = new Channel.Descriptor(
-								newExtenEvent.getAppData(), newExtenEvent
-										.getDateReceived(), new CallEndpoint(
-										newExtenEvent.getExtension()));
-							
-							logger.info("called:" + calledChannelDescriptor.getEndpoint().getCallId()+ " dialed:" + newExtenEvent.getAppData());
-							
-							//instantiate a new two parties call 
-							TwoPartiesCall twoPartiesCall = new TwoPartiesCall(callId,newChannelEvent.getDateReceived(),callerChannelDescriptor,calledChannelDescriptor);
-							provider.attachCall(twoPartiesCall);
+							TwoPartiesCall twoPartiesCall = new TwoPartiesCall(callId, newChannelEvent.getDateReceived(), 
+								dialingChannelDesc, dialedChannelDesc);
+							logger.info("twoPartiesCall " + twoPartiesCall);
+												
 							provider.removeCallConstruction(this);
-							logger.info("instantiate a new twoPartiesCall " + twoPartiesCall);
+							logger.info("twoPartiesCall removeCallConstruction " +this);
+							provider.attachCall(twoPartiesCall);
+							logger.info("attachCall " +twoPartiesCall);
 							return true;
-							
-						}else /*if(newExtenEvent.getApplication().equals("Playback") 
-								||newExtenEvent.getApplication().equals("MeetMe")
-								||newExtenEvent.getApplication().equals("AGI")
-								)*/{
-							waitState = WAIT_NEW_STATE_UP;
+						} else {
 							eventStack.push(newExtenEvent);
-							logger.info("WAIT_NEW_STATE_UP " + this);
-							return true;
+							waitState = WAIT_NEW_STATE_UP;
+							logger.info("WAIT_NEW_STATE_UP");
+							return true;						
 						}
+//						if(newExtenEvent.getApplication().equals("Dial")){
+//							
+//							newChannelEvent = (NewChannelEvent)eventStack.pop();
+//							
+//							//default|johndoe|666|Sat Sep 06 17:48:35 CEST 2008
+//							String callId = newExtenEvent.getContext()
+//								+ "|" + newChannelEvent.getCallerId()
+//								+ "|" + newExtenEvent.getExtension()
+//								+ "|" + DateFormatter.format(newChannelEvent
+//										.getDateReceived());
+//							
+//							logger.info("callId:" + callId);
+//							
+//							Channel.Descriptor callerChannelDescriptor = new Channel.Descriptor(
+//								newChannelEvent.getChannel(), newChannelEvent
+//										.getDateReceived(), new CallEndpoint(newExtenEvent.getExtension()));
+//							
+//							logger.info("caller:" + callerChannelDescriptor);
+//							
+//							Channel.Descriptor calledChannelDescriptor = new Channel.Descriptor(
+//								newExtenEvent.getAppData(), newExtenEvent
+//										.getDateReceived(), new CallEndpoint(
+//										newExtenEvent.getExtension()));
+//							
+//							logger.info("called:" + calledChannelDescriptor.getEndpoint().getId()+ " dialed:" + newExtenEvent.getAppData());
+//							
+//							//instantiate a new two parties call 
+//							TwoPartiesCall twoPartiesCall = new TwoPartiesCall(callId,newChannelEvent.getDateReceived(),callerChannelDescriptor,calledChannelDescriptor);
+//							provider.attachCall(twoPartiesCall);
+//							provider.removeCallConstruction(this);
+//							logger.info("instantiate a new twoPartiesCall " + twoPartiesCall);
+//							return true;
+//							
+//						}else /*if(newExtenEvent.getApplication().equals("Playback") 
+//								||newExtenEvent.getApplication().equals("MeetMe")
+//								||newExtenEvent.getApplication().equals("AGI")
+//								)*/{
+//							waitState = WAIT_NEW_STATE_UP;
+//							eventStack.push(newExtenEvent);
+//							logger.info("WAIT_NEW_STATE_UP " + this);
+//							return true;
+//						}
+					}
+				}else if(event instanceof HangupEvent) {
+					HangupEvent hangupEvent = (HangupEvent) event;
+					logger.info("-> HangupEvent " +hangupEvent);
+					
+					logger.info("eventStack " +eventStack.size());
+					NewChannelEvent newChannelEvent = (NewChannelEvent) eventStack.peek();
+					
+					logger.info("peek NewChannelEvent " + newChannelEvent);
+					
+					if(hangupEvent.getUniqueId().equals(newChannelEvent.getUniqueId())) {
+						provider.removeCallConstruction(this);
+						logger.info("HangupEvent removeCallConstruction " +this);
 					}
 				}
 				break;
@@ -117,8 +175,9 @@ public class CallCostruction {
 						
 						if(newExtenEvent.getApplication().equals("MeetMe")){
 							waitState = WAIT_MEETMEJOIN;
-							logger.info("WAIT_MEETMEJOIN " + this);
 							eventStack.push(newStateEvent);
+							logger.info("WAIT_MEETMEJOIN  eventStack " + eventStack);
+							
 						}
 						else/*(newExtenEvent.getApplication().equals("Playback") )*/{
 
@@ -139,6 +198,7 @@ public class CallCostruction {
 							//instantiate a new single party call 
 							SinglePartyCall singleCall = new SinglePartyCall(callId,newChannelEvent.getDateReceived(),CallState.ACTIVE.state(),channelDescriptor);
 							provider.removeCallConstruction(this);
+							logger.info("singleCall removeCallConstruction " + this);
 							provider.attachCall(singleCall);
 							logger.info("instantiate a new singleCall " + singleCall);
 							
@@ -158,14 +218,54 @@ public class CallCostruction {
 					NewExtenEvent newExtenEvent = (NewExtenEvent) eventStack.peek();
 					if(he.getUniqueId().equals(newExtenEvent.getUniqueId())) {
 						provider.removeCallConstruction(this);
+						logger.info("HangupEvent removeCallConstruction " + this);
+						
 					}
 				}
 				
 				break;
 				
 			case WAIT_MEETMEJOIN:
-				
-				if(event instanceof MeetMeJoinEvent){
+				if(event instanceof MeetMeJoinEvent) {
+					MeetMeJoinEvent mmje = (MeetMeJoinEvent) event;
+					NewStateEvent nse = (NewStateEvent) eventStack.pop();
+					NewExtenEvent nee = (NewExtenEvent) eventStack.pop();
+					NewChannelEvent nce = (NewChannelEvent) eventStack.pop();				
+					String roomId = mmje.getMeetMe();
+					logger.info("Processing MeetMeJoinEvent " + mmje.getMeetMe());
+					
+					boolean confCallExist = false;
+					
+					logger.info("provider.getAttachedCalls() size " + provider.getAttachedCalls().size());
+					
+					for(Iterator iter = provider.getAttachedCalls().iterator(); iter.hasNext();) {
+						Call attachedCall = (Call) iter.next();
+						if(attachedCall instanceof ConferenceCall) {								
+							ConferenceCall confCall = (ConferenceCall) attachedCall;						
+							if(confCall.getRoomId().equals(roomId)) {
+								confCallExist = true;							
+								Channel.Descriptor newChannelDesc = new Channel.Descriptor(nce.getChannel(), 
+									nce.getDateReceived(), new CallEndpoint(nee.getExtension()));
+								confCall.addChannel(newChannelDesc);							
+								provider.removeCallConstruction(this);
+								logger.info("confCallExist removeCallConstruction " + this);
+								return true;
+							}
+						}
+					}	
+					
+					if(!confCallExist) {					
+						Channel.Descriptor channelDesc = new Channel.Descriptor(nce.getChannel(), 
+							nce.getDateReceived(), new CallEndpoint(nee.getExtension()));					
+						ConferenceCall confCall = new ConferenceCall(roomId, mmje.getDateReceived(), channelDesc);
+						provider.removeCallConstruction(this);
+						logger.info("ConferenceCall removeCallConstruction " + this);
+						provider.attachCall(confCall);
+						logger.info("ConferenceCall attachCall " + confCall);
+						return true;					
+					} 
+				}				
+				/*if(event instanceof MeetMeJoinEvent){
 					
 					MeetMeJoinEvent meetMeJoinEvent = (MeetMeJoinEvent)event;
 					String roomId = meetMeJoinEvent.getMeetMe();
@@ -176,7 +276,7 @@ public class CallCostruction {
 					NewChannelEvent newChannelEvent = (NewChannelEvent)eventStack.pop();
 					
 					boolean conferenceCallExist = false;
-					logger.info("attachedCalls size " + provider.getAttachedCalls().size());
+					logger.info("provider attachedCalls size " + provider.getAttachedCalls().size());
 					
 					for(Call call :provider.getAttachedCalls()){
 						
@@ -190,9 +290,11 @@ public class CallCostruction {
 								
 								Channel.Descriptor newChannelDescriptor = new Channel.Descriptor(newChannelEvent.getChannel(),newChannelEvent.getDateReceived(),new CallEndpoint(newExtenEvent.getExtension()));
 								conferenceCall.addChannel(newChannelDescriptor);
-								logger.info("added Channel " + newChannelDescriptor.getChannel()+ " to roomId " + conferenceCall.getId());
+								logger.info("added Channel " + newChannelDescriptor.getId()+ " to roomId " + conferenceCall.getId());
 								
 								provider.removeCallConstruction(this);
+								provider.attachCall(conferenceCall);
+								
 								logger.info("Conference " + conferenceCall.getId() + " Exists channels[" + conferenceCall.getChannels().size() +"]");
 								return true;
 							}
@@ -215,7 +317,7 @@ public class CallCostruction {
 						logger.info("instantiate a new conferenceCall " + conferenceCall);
 						return true;
 					}
-				}
+				}*/
 				break;
 		}
 		

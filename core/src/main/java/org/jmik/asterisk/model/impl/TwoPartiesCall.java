@@ -23,15 +23,24 @@ public class TwoPartiesCall extends Call{
 
 	private Channel callerChannel;
 	private Channel calledChannel;
-	private int state = Call.IDLE_STATE;
 
 	public TwoPartiesCall(String callId,Date date,Channel.Descriptor dialing,Channel.Descriptor dialed){
-		super(callId, date, Call.IDLE_STATE, dialed);
-		callerChannel = new Channel(dialing);
-		calledChannel = new Channel(dialed);
+		super(callId, date, Call.IDLE_STATE);
+
+		if(dialing == null){ 
+			logger.info("callerChannel " + callerChannel);
+			throw new IllegalArgumentException("dialingChannelDescriptor can not be null");
+		}
+		if(dialed == null){ 
+			logger.info("calledChannel " + calledChannel);
+			throw new IllegalArgumentException("dialedChannelDescriptor can not be null");
+		}
+		
+		callerChannel = new Channel(dialing,this);
+		calledChannel = new Channel(dialed,this);
 		logger.info("IDLE " + this);
 	}
-
+	
 	public boolean process(ManagerEvent event){
 		logger.info("STATE " + this.getState() + " process event " +event);
 		
@@ -40,21 +49,27 @@ public class TwoPartiesCall extends Call{
 			case Call.IDLE_STATE:
 				if(event instanceof DialEvent){
 					DialEvent dialEvent = (DialEvent)event;
+					logger.info("dialEvent src " + dialEvent.getSrc() + " callerChannel " + callerChannel.getDescriptor().getId());
 					
 					if(dialEvent.getSrc().equals(callerChannel.getDescriptor().getId())){
+						logger.info("match");
+						logger.info("calledChannel " + calledChannel);
+						logger.info("dialEvent.getDestination() " + dialEvent.getDestination());
+						
 						calledChannel.getDescriptor().setId(dialEvent.getDestination());
-						setState(Call.CONNECTING_STATE,"Dialing");
-						logger.info("DialEvent CONNECTING " + dialEvent.getDestination());
+						setState(Call.CONNECTING_STATE, "Dialing");
+	    				logger.info("DialEvent CONNECTING " + dialEvent.getDestination());
 						return true;
 					}
 				}else if(event instanceof HangupEvent){
 					HangupEvent hangupEvent = (HangupEvent)event;
-					if(hangupEvent.getChannel().equals(callerChannel.getDescriptor().getChannel())){
+					if(hangupEvent.getChannel().equals(callerChannel.getDescriptor().getId())){
 						setState(Call.INVALID_STATE,"No Route");
 						logger.info("No Route for caller " + callerChannel.getDescriptor().getId());
 						return true;
 					}
-				}else if(event instanceof NewChannelEvent){
+				}/*else if(event instanceof NewChannelEvent){
+					
 					NewChannelEvent newChannelEvent = (NewChannelEvent)event;
 					
 					String matcher = newChannelEvent.getChannel().substring(0,newChannelEvent.getChannel().indexOf("-"));
@@ -65,7 +80,7 @@ public class TwoPartiesCall extends Call{
 						logger.info("my destination channel " + calledChannel.getDescriptor().getId());
 						return true;
 					}
-				}
+				}*/
 				break;
 
 			case Call.CONNECTING_STATE:
@@ -78,29 +93,71 @@ public class TwoPartiesCall extends Call{
 						logger.info("LinkEvent Answered ACTIVE " + linkEvent.getChannel2());
 						return true;
 					}
-				}				
+				}/*			
+				if(event instanceof NewChannelEvent) {
+	        		NewChannelEvent nce = (NewChannelEvent) event;
+	        		logger.info("nce " + nce);
+	        		if(nce.getChannel().equals(calledChannel.getDescriptor().getId())) {        			
+	        			setState(Call.CONNECTING_STATE, "Ringing");
+	        			logger.info("Ringing");
+	    				return true;
+	        		}
+	        	} */else if(event instanceof HangupEvent) {
+	        		HangupEvent he = (HangupEvent) event;
+	        		if(he.getChannel().equals(callerChannel.getDescriptor().getId()) || 
+	        		   he.getChannel().equals(calledChannel.getDescriptor().getId())) {
+	        			if(he.getCause().intValue() == 16) {
+	        				setState(Call.INVALID_STATE, "Canceled");
+	        				logger.info("Canceled");
+	        				return true;        			
+	            		} else if(he.getCause().intValue() == 21) {
+	        				setState(Call.INVALID_STATE, "Rejected");
+	        				logger.info("Rejected");
+	        				return true;        			
+	            		}        			
+	        		} 
+	    		} else if(event instanceof LinkEvent) {
+	    			LinkEvent le = (LinkEvent) event;
+	    			if(le.getChannel1().equals(callerChannel.getDescriptor().getId())) {
+	    				setState(Call.ACTIVE_STATE, "Answered");
+	    				logger.info("Answered");
+	    				return true;
+	    			}	
+	    		}/*				
+				if(event instanceof LinkEvent){
+					LinkEvent linkEvent = (LinkEvent)event;
+					if(linkEvent.getChannel1().equals(callerChannel.getDescriptor().getId())
+							||linkEvent.getChannel2().equals(calledChannel.getDescriptor().getId()) 
+							){
+						setState(Call.ACTIVE_STATE,"Answered");
+						logger.info("LinkEvent Answered ACTIVE " + linkEvent.getChannel2());
+						return true;
+					}
+				}*/				
 				break;
 
 			case Call.ACTIVE_STATE:
-				if(event instanceof UnlinkEvent){
-					UnlinkEvent unlinkEvent = (UnlinkEvent)event;
-					if(unlinkEvent.getChannel1().equals(callerChannel.getDescriptor().getId())
-							||unlinkEvent.getChannel2().equals(calledChannel.getDescriptor().getId()) 
-							){
-						logger.info("unlinkEvent " + unlinkEvent.getChannel2());
-						return true;
-					}
-				}else if(event instanceof HangupEvent){
-					HangupEvent hangupEvent = (HangupEvent)event;
-					
-					if(hangupEvent.getChannel().equals(callerChannel.getDescriptor().getChannel()) || 
-							hangupEvent.getChannel().equals(calledChannel.getDescriptor().getChannel())){
-//							if(hangupEvent.getCause().intValue() == 0){
-							setState(Call.INVALID_STATE,"Hangup");
-							logger.info("HangupEvent INVALID Hangup " + hangupEvent.getChannel()+ " cause " + hangupEvent.getCauseTxt());
-//							}
-							return true;
-					}
+				if(event instanceof UnlinkEvent) {
+	    			UnlinkEvent ue = (UnlinkEvent) event;
+	    			if(ue.getChannel1().equals(callerChannel.getDescriptor().getId())) {
+	    				setState(Call.INVALID_STATE, "Call Ended");
+	    				logger.info("Call Ended");
+	    				return true;
+	    			}
+	    		}else if(event instanceof HangupEvent){
+	    			HangupEvent he = (HangupEvent) event;
+	        		if(he.getChannel().equals(callerChannel.getDescriptor().getId()) || 
+	        		   he.getChannel().equals(calledChannel.getDescriptor().getId())) {
+	        			if(he.getCause().intValue() == 16) {
+	        				setState(Call.INVALID_STATE, "Canceled");
+	        				logger.info("Canceled");
+	        				return true;        			
+	            		} else if(he.getCause().intValue() == 21) {
+	        				setState(Call.INVALID_STATE, "Rejected");
+	        				logger.info("Rejected");
+	        				return true;        			
+	            		}        			
+	        		} 
 				}
 				break;
 		}
@@ -114,10 +171,10 @@ public class TwoPartiesCall extends Call{
 		return state;
 	}
 
-	public void setState(int state,String reasonForStateChange) {
-		stateChanged(this.getState(), this);
-		this.state = state;
-	}
+//	public void setState(int state,String reasonForStateChange) {
+//		stateChanged(this.getState(), this);
+//		this.state = state;
+//	}
 
 	public void setState(int state) {
 		this.state = state;
@@ -135,7 +192,7 @@ public class TwoPartiesCall extends Call{
 	@Override
 	public String toString() {
 		StringBuffer st = new StringBuffer()
-		.append("[caller=" + callerChannel.getDescriptor().getId() + ",called=" + calledChannel.getDescriptor().getExtension() +",state="+state+"]");
+		.append("[caller=" + callerChannel.getDescriptor().getId() + ",called=" + calledChannel.getDescriptor().getId() +",state="+state+"]");
 		return st.toString();
 	}
 

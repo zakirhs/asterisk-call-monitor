@@ -17,32 +17,32 @@ public class SinglePartyCall extends Call{
 
 	private static Logger logger = Logger.getLogger(SinglePartyCall.class);
 
+	private Channel channel;
+	
 	public SinglePartyCall(String callId,Date date,int callState,Channel.Descriptor channelDescriptor){
-		super(callId, date, callState, channelDescriptor);
-		state = Call.ACTIVE_STATE;
-		setState(Call.ACTIVE_STATE, "Active");
-		logger.info("ACTIVED " + this);// current Listeners " + this.getListeners());
+		super(callId, date, callState);
+		if(channelDescriptor == null) throw new IllegalArgumentException("channelDescriptor can not be null");
+		this.channel = new Channel(channelDescriptor, this);
+				
 	}
 
-	protected void setState(int state,String reasonForStateChange){
-		stateChanged(state, this);
-		this.state = state;
+	public Channel getChannel() {
+		return channel;
 	}
 
 	public boolean process(ManagerEvent event){
-		switch (state) {
-			case Call.ACTIVE_STATE:
-				if(event instanceof HangupEvent){
-					HangupEvent hangupEvent = (HangupEvent)event;
-					if(hangupEvent.getChannel().equals(channel.getDescriptor().getId())){
-						logger.info("hangupEvent " + hangupEvent);
-						setState(Call.INVALID_STATE,"Hangup");
-						return true;
-					}
-				}
-				break;
-		}
-		return false;
+		if(getState() == Call.ACTIVE_STATE) {
+    		if(event instanceof HangupEvent) {
+    			HangupEvent he = (HangupEvent) event;
+    			if(he.getChannel().equals(channel.getDescriptor().getId())) {
+    				setState(Call.INVALID_STATE, "Call Ended");
+    				logger.info("Call Ended");
+    				return true;
+    			}
+    		}
+    	}
+    	
+    	return false;
 	}
 
 	@Override
