@@ -5,7 +5,6 @@ import org.asteriskjava.fastagi.AgiRequest;
 import org.asteriskjava.fastagi.AgiScript;
 import org.asteriskjava.fastagi.DefaultAgiServer;
 import org.asteriskjava.fastagi.MappingStrategy;
-import org.jmik.asterisk.gui.PresentationModel;
 
 /**
  * This class extends a DefaultAgiServer and use

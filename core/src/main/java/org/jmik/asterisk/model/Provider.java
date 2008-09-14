@@ -14,8 +14,6 @@ import org.jmik.asterisk.model.impl.CallCostruction;
  */
 public interface Provider {
 
-	// TODO public void record(Call call)
-	
 	/**
 	 * Drop a call
 	 * @param call

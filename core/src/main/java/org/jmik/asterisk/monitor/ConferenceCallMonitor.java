@@ -46,7 +46,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 	
 	protected static Logger logger = Logger.getLogger(ConferenceCallMonitor.class);
 
-	private Map noteTakers;
+	private Map<String,ConferenceCallMonitor.NoteTaker> noteTakers;
 	private SipStack sipStack;
 	private HeaderFactory headerFactory;
 	private AddressFactory addressFactory;
@@ -73,7 +73,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 		this.peerIP = peerIP;		
 		this.peerPort = peerPort;
 		
-		this.noteTakers = new HashMap();		
+		this.noteTakers = new HashMap<String,ConferenceCallMonitor.NoteTaker>();		
 		try {
 			init();
 		} catch(Exception e) {
@@ -197,27 +197,33 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 				Address fromNameAddress = addressFactory.createAddress(fromAddress);
 				fromNameAddress.setDisplayName(fromDisplayName);
 				FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress, "12345");				
+//				log.info("fromHeader:"+fromHeader);
 				
 				// create To Header
 				SipURI toAddress = addressFactory.createSipURI(toUser, toSipAddress);
 				Address toNameAddress = addressFactory.createAddress(toAddress);
 				toNameAddress.setDisplayName(toDisplayName);
 				ToHeader toHeader = headerFactory.createToHeader(toNameAddress, null);
+//				log.info("toHeader:"+toHeader);
 
 				// create Request URI
 				SipURI requestURI = addressFactory.createSipURI(toUser, peerIP + ":" + peerPort);
+//				log.info("requestURI:"+requestURI);
 
 				// Create ViaHeaders
-				ArrayList viaHeaders = new ArrayList();				
+				ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();				
 				ViaHeader viaHeader = headerFactory.createViaHeader(myIP, myPort, "udp", null);
 				viaHeaders.add(viaHeader);
+//				log.info("viaHeader:"+viaHeader);
 
 				// Create ContentTypeHeader
 				ContentTypeHeader contentTypeHeader = headerFactory.createContentTypeHeader("application", "sdp");
+//				log.info("contentTypeHeader:"+contentTypeHeader);
 
 				// Create a new CallId header
 				CallIdHeader callIdHeader = sipProvider.getNewCallId();
 				callId = callIdHeader.getCallId();
+//				log.info("callId:"+callId);
 
 				// Create a new Cseq header
 				CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(1, Request.INVITE);
@@ -228,20 +234,25 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 				// Create the request.
 				Request request = messageFactory.createRequest(requestURI, Request.INVITE, 
 					callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwards);
+//				log.info("request\n:"+request+"\n");
+
 				// Create contact headers
 				String contactHost = sipStack.getIPAddress();
 				SipURI contactUrl = addressFactory.createSipURI(fromName, contactHost);
 				contactUrl.setPort(myPort);
+//				log.info("contactUrl:"+request);
 
 				// Create the contact name address.
 				SipURI contactURI = addressFactory.createSipURI(fromName, myIP);
 				contactURI.setPort(myPort);
+//				log.info("contactURI:"+contactURI);
 
 				Address contactAddress = addressFactory.createAddress(contactURI);
 				// Add the contact address.
 				contactAddress.setDisplayName(fromName);
 				ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
 				request.addHeader(contactHeader);
+//				log.info("contactHeader:"+contactHeader);
 
 				String sdpData =
 					"v=0\r\n"
@@ -258,13 +269,15 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 						+ "a=fmtp:97 mode=30\r\n";
 
 				request.setContent(sdpData, contentTypeHeader);
+
+				log.info("joinConference invite \n----------------------------------------------------------------------\n"
+						+request+"\n-------------------------------------------------------------------------\n");
+
 				// Create the client transaction.
 				ClientTransaction inviteTid = sipProvider.getNewClientTransaction(request);
 				// send the request out.
 				
-				log.info("joinConference invite \n----------------------------------------------------------------------\n"
-						+request+"\n-------------------------------------------------------------------------\n");
-
+				
 				inviteTid.sendRequest();
 				
 				log.info("joinConference invite sent ");
@@ -301,7 +314,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 				SipURI requestURI = addressFactory.createSipURI(toUser, peerIP + ":" + peerPort);
 
 				// Create ViaHeaders
-				ArrayList viaHeaders = new ArrayList();				
+				ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();				
 				ViaHeader viaHeader = headerFactory.createViaHeader(myIP, myPort, "udp", null);
 				viaHeaders.add(viaHeader);
 

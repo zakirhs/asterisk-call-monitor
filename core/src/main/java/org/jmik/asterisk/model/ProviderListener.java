@@ -22,6 +22,4 @@ public interface ProviderListener{
 	 */
 	public void callDetached(Call call);
 	
-//	public Set<Call> getAttachedCalls(int type);
-	
 }

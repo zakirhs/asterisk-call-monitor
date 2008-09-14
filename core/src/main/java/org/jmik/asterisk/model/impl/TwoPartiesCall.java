@@ -7,7 +7,6 @@ import org.asteriskjava.manager.event.DialEvent;
 import org.asteriskjava.manager.event.HangupEvent;
 import org.asteriskjava.manager.event.LinkEvent;
 import org.asteriskjava.manager.event.ManagerEvent;
-import org.asteriskjava.manager.event.NewChannelEvent;
 import org.asteriskjava.manager.event.UnlinkEvent;
 
 /**
