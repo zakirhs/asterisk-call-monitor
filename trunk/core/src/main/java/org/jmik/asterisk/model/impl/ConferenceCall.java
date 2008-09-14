@@ -7,7 +7,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.asteriskjava.manager.event.HangupEvent;
 import org.asteriskjava.manager.event.ManagerEvent;
 import org.asteriskjava.manager.event.MeetMeLeaveEvent;
 import org.jmik.asterisk.model.CallListener;

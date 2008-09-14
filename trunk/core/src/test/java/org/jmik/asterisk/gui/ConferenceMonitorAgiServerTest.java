@@ -9,10 +9,10 @@ public class ConferenceMonitorAgiServerTest {
 
 	public static void main(String[] args) {
 		ConferenceCallMonitor conferenceMonitor = new ConferenceCallMonitor(
-				"192.168.2.7", 4573, "192.168.2.3", 5038);
+				"localhost", 4573, "localhost", 5038);
 		org.jmik.asterisk.monitor.ConferenceMonitorScript monitorScript = new org.jmik.asterisk.monitor.ConferenceMonitorScript(
 				conferenceMonitor);
-		conferenceMonitor.monitorConference("400");
+//		conferenceMonitor.monitorConference("400");
 		ConferenceMonitorAgiServer agiServer = new ConferenceMonitorAgiServer(
 				monitorScript);
 		try {

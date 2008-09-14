@@ -1,7 +1,6 @@
 package org.jmik.asterisk.model.impl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -190,8 +189,8 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 		if(call.getState() == Call.INVALID_STATE) {
 			logger.info("call detached: " + call);
 			attachedCalls.remove(call);
-			for(Iterator iter = listeners.iterator(); iter.hasNext(); ) {
-				ProviderListener listener = (ProviderListener) iter.next();
+			
+			for(ProviderListener listener : listeners) {
 				listener.callDetached(call);
 			}			
 		}
@@ -223,8 +222,8 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 			}			
 		} else if(call instanceof ConferenceCall) {
 			ConferenceCall cc = (ConferenceCall) call;
-			for(Iterator iter = cc.getChannels().iterator(); iter.hasNext();) {
-				Channel channel = (Channel) iter.next();
+			
+			for(Channel channel : cc.getChannels()) {
 				HangupAction hangupAction = new HangupAction(channel.getDescriptor().getId());
 				try {
 					managerConnection.sendAction(hangupAction);
@@ -253,14 +252,15 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 		} else if(call instanceof ConferenceCall) {
 			ConferenceCall cc = (ConferenceCall) call;	
 			
-			for(Iterator iter = cc.getChannels().iterator(); iter.hasNext();) {
-				Channel channel = (Channel) iter.next();
+			for(Channel channel : cc.getChannels()) {
 				String channelId = channel.getDescriptor().getId(); 
 				logger.info("cc channel " + channelId);
-				if(channelId.startsWith("SIP/notetaker-")) {
-					monitoredChannel = channelId;		
-					break;
-				}
+				monitoredChannel = channelId;
+				//TODO
+//				if(channelId.startsWith("SIP/notetaker-")) {
+//					monitoredChannel = channelId;		
+//					break;
+//				}
 			}
 		}
 		
@@ -283,7 +283,7 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 		}
 		
 		MonitorAction monitorAction = new MonitorAction(monitoredChannel, 
-				"/tmp/" + fileName.toString(), "wav", Boolean.TRUE);
+				"/tmp/" + fileName.toString()/*, "wav", Boolean.TRUE*/);
 		try {
 			managerConnection.sendAction(monitorAction);
 			logger.info("send " + monitorAction);

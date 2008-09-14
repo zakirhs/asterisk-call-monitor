@@ -27,8 +27,6 @@ import org.jmik.asterisk.model.impl.TwoPartiesCall;
 import org.jmik.asterisk.monitor.ConferenceCallMonitor;
 import org.jmik.asterisk.monitor.ConferenceMonitorAgiServer;
 import org.jmik.asterisk.monitor.ConferenceMonitorScript;
-import org.jmik.asterisk.monitor.SinglePartyMonitor;
-import org.jmik.asterisk.monitor.TwoPartiesMonitor;
 
 /**
  * 
@@ -38,11 +36,7 @@ import org.jmik.asterisk.monitor.TwoPartiesMonitor;
 public class Main implements ProviderListener, CallListener {
 
 	private static Logger logger = Logger.getLogger(Main.class);
-
 	private static PresentationModel presentationModel;
-////	private static ConferenceCallMonitor conferenceMonitor;
-//	private static TwoPartiesMonitor twoPartiesMonitor;
-//	private static SinglePartyMonitor singlePartyMonitor;
 
 	private AsteriskProvider asteriskProvider;
 	private List<Call> conferenceCalls;

@@ -194,7 +194,7 @@ public class PresentationModel {
 		}
 	}
 	
-	public List getCalls(int callType) {
+	public List<Call> getCalls(int callType) {
 		switch(callType) {
 		case SINGLEPARTY_CALLTYPE:
 			return singlePartyCalls;
@@ -208,8 +208,8 @@ public class PresentationModel {
 	}	
 
 	public void callAttached(Call call) {
-		for(Iterator iter = listeners.iterator(); iter.hasNext();) {
-			Listener listener = (Listener) iter.next();
+		
+		for(Listener listener : listeners) {
 			listener.callAttached(this, call);
 			logger.info("notify callAttached to " + listener);
 		}
@@ -218,8 +218,7 @@ public class PresentationModel {
 	}
 	
 	public void callStateChanged(int oldState, Call call) {		
-		for(Iterator iter = listeners.iterator(); iter.hasNext();) {
-			Listener listener = (Listener) iter.next();
+		for(Listener listener : listeners) {
 			listener.callStateChanged(this, oldState, call);
 			logger.info("notify callStateChanged to " + listener);
 		}
@@ -227,8 +226,7 @@ public class PresentationModel {
 	
 	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
 		logger.info("channelAdded conferenceCall " + conferenceCall + " channel " + channel);
-		for(Iterator iter = listeners.iterator(); iter.hasNext();) {
-			Listener listener = (Listener) iter.next();
+		for(Listener listener : listeners) {
 			listener.channelAdded(this, conferenceCall, channel);
 			logger.info("channelAdded notify " + listener);
 		}		
@@ -236,8 +234,7 @@ public class PresentationModel {
 	
 	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
 		logger.info("channelRemoved conferenceCall " + conferenceCall + " channel " + channel);
-		for(Iterator iter = listeners.iterator(); iter.hasNext();) {
-			Listener listener = (Listener) iter.next();
+		for(Listener listener : listeners) {
 			listener.channelRemoved(this, conferenceCall, channel);
 			logger.info("channelRemoved notify " + listener);
 		}		
