@@ -23,7 +23,7 @@ public class SinglePartyCall extends Call{
 		super(callId, date, callState);
 		if(channelDescriptor == null) throw new IllegalArgumentException("channelDescriptor can not be null");
 		this.channel = new Channel(channelDescriptor, this);
-				
+		logger.info("ACTIVE " + this);
 	}
 
 	public Channel getChannel() {
@@ -43,13 +43,6 @@ public class SinglePartyCall extends Call{
     	}
     	
     	return false;
-	}
-
-	@Override
-	public String toString() {
-		StringBuffer st = new StringBuffer()
-		.append(this.getClass().getSimpleName()+"@"+this.hashCode()+ "[channel="+channel.getDescriptor().getId() +",state="+state+"]");
-		return st.toString();
 	}
 
 }
