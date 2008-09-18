@@ -81,7 +81,8 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 			throw new RuntimeException(e);
 		}
 
-		logger.info(this);
+		if(logger.isDebugEnabled())
+			logger.debug(this);
 	}
 	
 	public void init() throws Exception {
@@ -112,13 +113,15 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 		sipProvider = sipStack.createSipProvider(udpListeningPoint);	
 		sipProvider.addSipListener(this);
 		
-		logger.info("init() " + sipProvider);
+		if(logger.isDebugEnabled())
+			logger.debug("init() " + sipProvider);
 	}
 	
 	public boolean isMonitored(String roomId) {
 		synchronized (noteTakers) {
 			boolean monitorExists = noteTakers.containsKey(roomId);
-			logger.info("roomId " + roomId + " is monitored " + monitorExists);
+			if(logger.isDebugEnabled())
+			logger.debug("roomId " + roomId + " is monitored " + monitorExists);
 			
 			return noteTakers.containsKey(roomId);
 		}		
@@ -133,7 +136,8 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 			NoteTaker noteTaker = new NoteTaker(roomId);
 			noteTaker.joinConference();
 			noteTakers.put(roomId, noteTaker);
-			logger.info("add " +noteTakers);
+			if(logger.isDebugEnabled())
+			logger.debug("add " +noteTakers);
 			
 		}
 	}
@@ -185,7 +189,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 			log.info("joinConference()");
 			try {
 				String fromName = "notetaker";
-				String fromSipAddress = "raka.net";
+				String fromSipAddress = "jmik.org";
 				String fromDisplayName = "Conference Note Taker";
 
 				String toSipAddress = peerIP;
@@ -197,33 +201,27 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 				Address fromNameAddress = addressFactory.createAddress(fromAddress);
 				fromNameAddress.setDisplayName(fromDisplayName);
 				FromHeader fromHeader = headerFactory.createFromHeader(fromNameAddress, "12345");				
-//				log.info("fromHeader:"+fromHeader);
 				
 				// create To Header
 				SipURI toAddress = addressFactory.createSipURI(toUser, toSipAddress);
 				Address toNameAddress = addressFactory.createAddress(toAddress);
 				toNameAddress.setDisplayName(toDisplayName);
 				ToHeader toHeader = headerFactory.createToHeader(toNameAddress, null);
-//				log.info("toHeader:"+toHeader);
 
 				// create Request URI
 				SipURI requestURI = addressFactory.createSipURI(toUser, peerIP + ":" + peerPort);
-//				log.info("requestURI:"+requestURI);
 
 				// Create ViaHeaders
 				ArrayList<ViaHeader> viaHeaders = new ArrayList<ViaHeader>();				
 				ViaHeader viaHeader = headerFactory.createViaHeader(myIP, myPort, "udp", null);
 				viaHeaders.add(viaHeader);
-//				log.info("viaHeader:"+viaHeader);
 
 				// Create ContentTypeHeader
 				ContentTypeHeader contentTypeHeader = headerFactory.createContentTypeHeader("application", "sdp");
-//				log.info("contentTypeHeader:"+contentTypeHeader);
 
 				// Create a new CallId header
 				CallIdHeader callIdHeader = sipProvider.getNewCallId();
 				callId = callIdHeader.getCallId();
-//				log.info("callId:"+callId);
 
 				// Create a new Cseq header
 				CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(1, Request.INVITE);
@@ -234,25 +232,21 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 				// Create the request.
 				Request request = messageFactory.createRequest(requestURI, Request.INVITE, 
 					callIdHeader, cSeqHeader, fromHeader, toHeader, viaHeaders, maxForwards);
-//				log.info("request\n:"+request+"\n");
 
 				// Create contact headers
 				String contactHost = sipStack.getIPAddress();
 				SipURI contactUrl = addressFactory.createSipURI(fromName, contactHost);
 				contactUrl.setPort(myPort);
-//				log.info("contactUrl:"+request);
 
 				// Create the contact name address.
 				SipURI contactURI = addressFactory.createSipURI(fromName, myIP);
 				contactURI.setPort(myPort);
-//				log.info("contactURI:"+contactURI);
 
 				Address contactAddress = addressFactory.createAddress(contactURI);
 				// Add the contact address.
 				contactAddress.setDisplayName(fromName);
 				ContactHeader contactHeader = headerFactory.createContactHeader(contactAddress);
 				request.addHeader(contactHeader);
-//				log.info("contactHeader:"+contactHeader);
 
 				String sdpData =
 					"v=0\r\n"
@@ -270,8 +264,8 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 
 				request.setContent(sdpData, contentTypeHeader);
 
-				log.info("joinConference invite \n----------------------------------------------------------------------\n"
-						+request+"\n-------------------------------------------------------------------------\n");
+				if(logger.isDebugEnabled())
+					logger.debug("request\n:"+request+"\n");
 
 				// Create the client transaction.
 				ClientTransaction inviteTid = sipProvider.getNewClientTransaction(request);
@@ -280,7 +274,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 				
 				inviteTid.sendRequest();
 				
-				log.info("joinConference invite sent ");
+				log.info("joinConference invite sent");
 				
 			} catch(Exception e) {
 				throw new RuntimeException(e);
@@ -291,7 +285,7 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 			log.info("leaveConference()");
 			try {
 				String fromName = "notetaker";
-				String fromSipAddress = "raka.net";
+				String fromSipAddress = "jmik.org";
 				String fromDisplayName = "Conference Note Taker";
 
 				String toSipAddress = peerIP;
@@ -361,13 +355,15 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 	}
 
 	public void stateChanged(int oldState, Call call) {
-		logger.info("stateChanged " + call);
+		if(logger.isDebugEnabled())
+			logger.debug("stateChanged " + call);
 		System.out.println("stateChanged " + call);
 	}
 	
 	public void channelRemoved(
 		ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelRemoved " + channel);
+		if(logger.isDebugEnabled())
+			logger.debug("channelRemoved " + channel);
 		//assume the only one left is the notetaker
 		if(conferenceCall.getChannels().size() == 1) {
 			unmonitorConference(conferenceCall.getRoomId());
@@ -375,45 +371,50 @@ public class ConferenceCallMonitor implements ProviderListener, CallListener, Si
 		}
 	}
 	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelAdded " + channel);
+		if(logger.isDebugEnabled())
+			logger.debug("channelAdded " + channel);
 		System.out.println("channelAdded " + channel);
 	}	
 
 	public void callAttached(Call call) {
-		logger.info("callAttached " + call);
+		if(logger.isDebugEnabled())
+			logger.debug("callAttached " + call);
 		
 		if(call instanceof ConferenceCall) {
 			call.addListener(this);
 			
-			logger.info("callAttached " + call + " addListener " + this);
+			if(logger.isDebugEnabled())
+			logger.debug("callAttached " + call + " addListener " + this);
 			monitorConference(((ConferenceCall) call).getRoomId());
 		}
 	}
 	public void callDetached(Call call) {
-		logger.info("callDetached " + call);
+		if(logger.isDebugEnabled())
+			logger.debug("callDetached " + call);
 		
 		if(call instanceof ConferenceCall) {			
 			call.removeListener(this);			
 			ConferenceCall confCall = (ConferenceCall) call;
-			logger.info("callDetached " + confCall + " removeListener " + this);
+			if(logger.isDebugEnabled())
+			logger.debug("callDetached " + confCall + " removeListener " + this);
 			unmonitorConference(((ConferenceCall) call).getRoomId());
 		}
 	}
 
 	public void processDialogTerminated(DialogTerminatedEvent arg0) {
-		// TODO Auto-generated method stub
-		logger.info("processDialogTerminated");
+		if(logger.isDebugEnabled())
+			logger.debug("processDialogTerminated");
 	}
 
 	public void processIOException(IOExceptionEvent arg0) {
-		// TODO Auto-generated method stub
-		logger.info("processIOException");
+		if(logger.isDebugEnabled())
+			logger.debug("processIOException");
 		
 	}
 
 	public void processTransactionTerminated(TransactionTerminatedEvent arg0) {
-		// TODO Auto-generated method stub
-		logger.info("processTransactionTerminated");
+		if(logger.isDebugEnabled())
+			logger.debug("processTransactionTerminated");
 	}
 
 	

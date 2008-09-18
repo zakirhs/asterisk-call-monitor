@@ -15,7 +15,6 @@ public class Channel {
 	private static Logger logger = Logger.getLogger(Channel.class);
 
 	private Descriptor descriptor;
-	private Call call;
 
 	Channel(Descriptor descriptor, Call call) {
 		if (descriptor == null){
@@ -28,7 +27,6 @@ public class Channel {
 		}
 
 		this.descriptor = descriptor;
-		this.call = call;
 	}
 
 	public Channel(Descriptor descriptor) {

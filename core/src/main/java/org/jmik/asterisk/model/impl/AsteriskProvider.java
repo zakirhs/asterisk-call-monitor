@@ -45,16 +45,16 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
     }
     
 	public void onManagerEvent(ManagerEvent managerEvent){
-		
-		logger.debug("RECEIVED " + managerEvent);
+		if(logger.isDebugEnabled())
+			logger.debug("RECEIVED " + managerEvent);
 		
 		boolean processed = false;
 		
-		logger.debug("attachedCalls " +attachedCalls.size());
 		// iterate through attached Calls if any "accept" the managerEvent
 		for (Call call : this.attachedCalls) {
 			processed = call.process(managerEvent);
-			logger.debug("" + call.getClass().getSimpleName() +"[state=" + call.getState()+ "] processEvent " + managerEvent.getClass().getSimpleName() + " processed " + processed);
+			if(logger.isDebugEnabled())
+				logger.debug("" + call.getClass().getSimpleName() +"[state=" + call.getState()+ "] processEvent " + managerEvent.getClass().getSimpleName() + " processed " + processed);
 			
 			if(processed)break;
 		}
@@ -74,7 +74,8 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 		// iterate through the living CallConstruction
 		for(CallCostruction callCostruction : callConstrutions){
 			processed = callCostruction.processEvent(event);
-			logger.info("processEvent " + event.getClass().getSimpleName() +" cc state " + callCostruction.getWaitState() + " processed " + processed);
+			if(logger.isDebugEnabled())
+				logger.debug("processEvent " + event.getClass().getSimpleName() +" cc state " + callCostruction.getWaitState() + " processed " + processed);
 			
 			if(processed) break;
 		}
@@ -88,44 +89,47 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 					callConstrutions.add(callCostruction);
 				}
 			}else{
-				logger.info("NOT processed " + event);
+				if(logger.isDebugEnabled())
+					logger.debug("NOT processed " + event);
 			}
 		}
 	}
 
 	public void removeCallConstruction(CallCostruction callConstruction) {
 		callConstrutions.remove(callConstruction);
-		logger.info("removeCallConstruction " + callConstruction);
+		if(logger.isDebugEnabled())
+			logger.debug("removeCallConstruction " + callConstruction);
 	}
 
 	public void addListener(ProviderListener providerListener) {
 		listeners.add(providerListener);
-		logger.info("addListener " + listeners);
+		if(logger.isDebugEnabled())
+			logger.debug("addListener " + listeners);
 	}
 	
 	public void removeListener(ProviderListener providerListener) {
 		listeners.remove(providerListener);
-		logger.info("removeListener " + listeners);
+		if(logger.isDebugEnabled())
+			logger.debug("removeListener " + listeners);
 	}
 
 	public void attachCall(Call call) {
-		logger.info("attachCall  " + attachedCalls);
-		logger.info("attachCall  " + call);
 		
 		this.attachedCalls.add(call);
-		logger.info("attachedCalls size " + attachedCalls.size() + " " + attachedCalls);
-		logger.info("listeners size " + listeners.size() + " " + listeners);
 		
 		for(ProviderListener providerListener : listeners){
 			providerListener.callAttached(call);
+			if(logger.isDebugEnabled())
+				logger.debug("attachCall notify " + providerListener);		
 		}
 	}
 
 	public void detachCall(Call call) {
 		this.attachedCalls.remove(call);
-		logger.info("detachCall size " + attachedCalls.size() + " " + attachedCalls);
 		for(ProviderListener providerListener : listeners){
 			providerListener.callDetached(call);
+			if(logger.isDebugEnabled())
+				logger.debug("detachCall notify " + providerListener);		
 		}
 	}
 
@@ -133,61 +137,10 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 		return this.attachedCalls;
 	}
 
-//	public void monitor(Call call) {
-//		if(call instanceof SinglePartyCall){
-//			logger.info("monitor " + call);
-//		}else if(call instanceof TwoPartiesCall){
-//			logger.info("monitor " + call);
-//		}else if(call instanceof ConferenceCall){
-//			logger.info("monitor " + call);
-//		}
-//	}
-//
-//	public void drop(Call call) {
-//		if(call instanceof SinglePartyCall){
-//			SinglePartyCall singlePartyCall = (SinglePartyCall)call;
-//			HangupAction hangupAction = new HangupAction(singlePartyCall.getChannel().getDescriptor().getId());
-//			try {
-//				managerConnection.sendAction(hangupAction);
-//			} catch (Exception e) {
-//				throw new RuntimeException();
-//			}
-//			logger.info("drop " + singlePartyCall);
-//						
-//		}else if(call instanceof TwoPartiesCall){
-//			
-//			TwoPartiesCall twoPartiesCall = (TwoPartiesCall)call;
-//			HangupAction hangupAction = new HangupAction(twoPartiesCall.getCallerChannel().getDescriptor().getId());
-//			try {
-//				managerConnection.sendAction(hangupAction);
-//			} catch (Exception e) {
-//				throw new RuntimeException();
-//			}
-//			logger.info("drop " + twoPartiesCall);
-//			
-//		}else if(call instanceof ConferenceCall){
-//			
-//			ConferenceCall conferenceCall = (ConferenceCall)call;
-//			for (Iterator<Channel> iterator = conferenceCall.getChannels().iterator(); iterator.hasNext();) {
-//				Channel channel = (Channel) iterator.next();
-//				HangupAction hangupAction = new HangupAction(channel.getDescriptor().getId());
-//				try {
-//					managerConnection.sendAction(hangupAction);
-//				} catch (Exception e) {
-//					throw new RuntimeException();
-//				}
-//			}
-//			logger.info("drop " + conferenceCall);
-//			
-//		}
-//		this.attachedCalls.remove(call);
-//		logger.info("remove " +call+" from attachedCalls " + attachedCalls);
-//		
-//	}
-
 	public void stateChanged(int oldState, Call call) {
 		if(call.getState() == Call.INVALID_STATE) {
-			logger.info("call detached: " + call);
+			if(logger.isDebugEnabled())
+				logger.debug("call detached: " + call);
 			attachedCalls.remove(call);
 			
 			for(ProviderListener listener : listeners) {
@@ -195,12 +148,15 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 			}			
 		}
 	}
+	
 	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelAdded: " + channel);
+		if(logger.isDebugEnabled())
+			logger.debug("channelAdded: " + channel);
 	}
 	
 	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelRemoved: " + channel);
+		if(logger.isDebugEnabled())
+			logger.debug("channelRemoved: " + channel);
 	}
 
 	public void drop(Call call) {
@@ -233,30 +189,35 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 			}
 		}
 	}
+	
 	public void monitor(Call call) {	
-		logger.info("monitor " +call);
+		if(logger.isDebugEnabled())
+			logger.debug("monitor " +call);
 		
 		String monitoredChannel = null;
 		
 		if(call instanceof SinglePartyCall) {
 			SinglePartyCall spc = (SinglePartyCall) call;
 			monitoredChannel = spc.getChannel().getDescriptor().getId();
-			logger.info("spc monitoredChannel " +monitoredChannel);
+			if(logger.isDebugEnabled())
+				logger.debug("spc monitoredChannel " +monitoredChannel);
 			
 			
 		} else if(call instanceof TwoPartiesCall) {
 			TwoPartiesCall tpc = (TwoPartiesCall) call;
 			monitoredChannel = tpc.getCallerChannel().getDescriptor().getId();	
-			logger.info("tpc monitoredChannel " +monitoredChannel);
+			if(logger.isDebugEnabled())
+				logger.debug("tpc monitoredChannel " +monitoredChannel);
 			
 		} else if(call instanceof ConferenceCall) {
 			ConferenceCall cc = (ConferenceCall) call;	
 			
 			for(Channel channel : cc.getChannels()) {
 				String channelId = channel.getDescriptor().getId(); 
-				logger.info("cc channel " + channelId);
+				if(logger.isDebugEnabled())
+					logger.debug("cc channel " + channelId);
 				monitoredChannel = channelId;
-				//TODO
+				//TODO choose the right monitored
 //				if(channelId.startsWith("SIP/notetaker-")) {
 //					monitoredChannel = channelId;		
 //					break;
@@ -264,7 +225,8 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 			}
 		}
 		
-		logger.info("monitoredChannel:" + monitoredChannel);
+		if(logger.isDebugEnabled())
+			logger.debug("monitoredChannel:" + monitoredChannel);
 		
 		StringBuffer fileName = new StringBuffer();
 		
@@ -286,7 +248,8 @@ public class AsteriskProvider implements Provider,ManagerEventListener,CallListe
 				"/tmp/" + fileName.toString()/*, "wav", Boolean.TRUE*/);
 		try {
 			managerConnection.sendAction(monitorAction);
-			logger.info("send " + monitorAction);
+			if(logger.isDebugEnabled())
+				logger.debug("send " + monitorAction);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -16,7 +16,7 @@ import org.jmik.asterisk.gui.PresentationModel;
 import org.jmik.asterisk.model.CallListener;
 import org.jmik.asterisk.model.Provider;
 import org.jmik.asterisk.model.ProviderListener;
-import org.jmik.asterisk.model.agi.AgiExp;
+import org.jmik.asterisk.model.agi.CallMonitorGUI;
 import org.jmik.asterisk.model.constants.Constants;
 import org.jmik.asterisk.model.impl.AsteriskProvider;
 import org.jmik.asterisk.model.impl.Call;
@@ -29,7 +29,8 @@ import org.jmik.asterisk.monitor.ConferenceMonitorAgiServer;
 import org.jmik.asterisk.monitor.ConferenceMonitorScript;
 
 /**
- * 
+ * Run call monitor engine and start gui.
+ *  
  * @author Michele La Porta
  *
  */
@@ -92,8 +93,7 @@ public class Main implements ProviderListener, CallListener {
 			twoPartiesCalls.add(call);
 		}else if(call instanceof ConferenceCall){
 			conferenceCalls.add(call);
-			logger.info("ConferenceCall callAttached " + call);
-			}
+		}
 		call.addListener(this);
 		
 		presentationModel.callAttached(call);
@@ -105,23 +105,22 @@ public class Main implements ProviderListener, CallListener {
 		
 		if(call instanceof SinglePartyCall){
 			singlePartyCalls.remove(call);
-			logger.info("callDetached " + singlePartyCalls);
 		}else if(call instanceof TwoPartiesCall){
 			twoPartiesCalls.remove(call);
-			logger.info("callDetached " + twoPartiesCalls);
 		}else if(call instanceof ConferenceCall){
 			conferenceCalls.remove(call);
-			logger.info("callDetached " + conferenceCalls);
 		}
 		
 //		presentationModel.callDetached(call);
 		call.removeListener(this);
+		logger.info("callDetached " + call);
 	}
 
 
 	public void stateChanged(int oldState, Call call) {
 		
-		logger.info("stateChanged " + call + " State " + call.getState() + " oldState " + oldState);
+		if(logger.isDebugEnabled())
+			logger.debug("stateChanged " + call + " State " + call.getState() + " oldState " + oldState);
 		
 		presentationModel.callStateChanged(oldState, call);
 		
@@ -130,15 +129,12 @@ public class Main implements ProviderListener, CallListener {
 
 			if(call instanceof SinglePartyCall){
 				singlePartyCalls.remove(call);
-				logger.info("remove from singlePartyCalls");
 			}else if(call instanceof TwoPartiesCall){
 				twoPartiesCalls.remove(call);
-				logger.info("remove from twoPartiesCalls");
 			}else if(call instanceof ConferenceCall){
 				conferenceCalls.remove(call);
-				logger.info("remove from conferenceCalls");
 			}
-
+			logger.info("removed invalid call " + call);
 //			presentationModel.callDetached(call);
 		}
 	}
@@ -161,10 +157,6 @@ public class Main implements ProviderListener, CallListener {
 	public List<Call> getTwoPartiesCalls() {
 		return twoPartiesCalls;
 	}
-
-//	public PresentationModel getPresentationModel() {
-//		return presentationModel;
-//	}
 
 	public Provider getAsteriskProvider() {
 		return asteriskProvider;
@@ -200,7 +192,7 @@ public class Main implements ProviderListener, CallListener {
 
 	public static void main(final String[] args) {
 		
-		final Main mainFrame = new Main(Constants.asteriskIpAddress,Constants.asteriskPort,Constants.asteriskManagerUser,Constants.asteriskManagerPassword);
+		final Main main = new Main(Constants.asteriskIpAddress,Constants.asteriskPort,Constants.asteriskManagerUser,Constants.asteriskManagerPassword);
 		
 		Thread inputThread  = new Thread(new Runnable(){		
 			public void run() {
@@ -208,24 +200,27 @@ public class Main implements ProviderListener, CallListener {
 					java.io.InputStreamReader reader = new java.io.InputStreamReader(System.in);
 					java.io.BufferedReader myInput = new java.io.BufferedReader(reader);
 					String str = new String();
+					System.out.println("command line interface:usage\n");
+					System.out.println("print");
+					System.out.println("exit");
 					try {
 						while((str = myInput.readLine()) != null){
 							System.out.println("" + str);
 							if(str.equals("print")){
-								System.out.println("main singlePartyCall " + mainFrame.getSinglePartyCalls());
-								System.out.println("main twopartiesCall " + mainFrame.getTwoPartiesCalls());
-								System.out.println("main conferenceCall " + mainFrame.getConferenceCalls());
-								System.out.println("main callconstuction " + mainFrame.getAsteriskProvider().getCallConstrutions());
-//								System.out.println("singlePartyMonitor " + singlePartyMonitor.getSinglePartyCalls());
-//								System.out.println("twoPartiesMonitor " + twoPartiesMonitor.getTwoPartiesCalls());
-//								System.out.println("conferenceMonitor " + conferenceMonitor.getConferenceCalls());
+								System.out.println("main singlePartyCall " + main.getSinglePartyCalls());
+								System.out.println("main twopartiesCall " + main.getTwoPartiesCalls());
+								System.out.println("main conferenceCall " + main.getConferenceCalls());
+								System.out.println("main callconstuction " + main.getAsteriskProvider().getCallConstrutions());
 							}else if(str.equals("help")){
 								System.out.println("usage\n");
 								System.out.println("print");
+							}else if(str.equals("exit")){
+								System.out.println("exit");
+								System.exit(1);
 							}
 						}
 					} catch (java.io.IOException e) {
-						System.out.println("Si è verificato un errore: " + e);
+						System.out.println("IOException: " + e.getMessage());
 						System.exit(-1);
 					}
 				} catch (Exception e) {
@@ -235,13 +230,12 @@ public class Main implements ProviderListener, CallListener {
 		});
 		inputThread.start();
 
-		final JFrame frame = new AgiExp(presentationModel/*,mainFrame.getAsteriskProvider()*/);
+		final JFrame frame = new CallMonitorGUI(presentationModel);
 		
 		Thread mainThread  = new Thread(new Runnable(){		
 			public void run() {
 				try {
-					mainFrame.run(Constants.asteriskIpAddress,Constants.asteriskPort, Constants.conferenceMonitorIpAddress, Constants.conferenceMonitorPort);
-					
+					main.run(Constants.asteriskIpAddress,Constants.asteriskPort, Constants.conferenceMonitorIpAddress, Constants.conferenceMonitorPort);
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(null, "Error:" + e.getMessage());
 					System.exit(-1);

@@ -3,12 +3,14 @@ package org.jmik.asterisk.model.constants;
 import java.util.ResourceBundle;
 
 /**
+ * See default properties in callmonitor.properties.
+ * 
  * @author Michele La Porta
  *
  */
 public class Constants {
 
-	static final String CONFIGURATION_BUNDLE = "callwatcher";
+	static final String CONFIGURATION_BUNDLE = "callmonitor";
 
 	private static ResourceBundle resourceBundle;
 

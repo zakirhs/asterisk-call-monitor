@@ -20,11 +20,16 @@ import org.jmik.asterisk.model.impl.ConferenceCall;
 import org.jmik.asterisk.model.impl.SinglePartyCall;
 import org.jmik.asterisk.model.impl.TwoPartiesCall;
 
-public class AgiExp extends javax.swing.JFrame implements PresentationModel.Listener {
+/**
+ * Graphic User Interface for call monitor.
+ * @author michele
+ *
+ */
+public class CallMonitorGUI extends javax.swing.JFrame implements PresentationModel.Listener {
     
 	private static final long serialVersionUID = 5290308198571753349L;
 
-	private static Logger logger = Logger.getLogger(AgiExp.class);
+	private static Logger logger = Logger.getLogger(CallMonitorGUI.class);
 	
     private PresentationModel presentationModel;
 	private JMenuBar jMenuBar1;
@@ -58,7 +63,7 @@ public class AgiExp extends javax.swing.JFrame implements PresentationModel.List
     private javax.swing.JScrollPane jScrollPane3;    
     // End of variables declaration
 	/** Creates new form AgiExp */
-    public AgiExp(PresentationModel presentationModel) {
+    public CallMonitorGUI(PresentationModel presentationModel) {
     	if(presentationModel == null) throw new IllegalArgumentException("presentationModel can not be null");
     	presentationModel.addListener(this);
     	this.presentationModel = presentationModel;    
@@ -308,10 +313,10 @@ public class AgiExp extends javax.swing.JFrame implements PresentationModel.List
         );
         
         pack();
-    }// </editor-fold>
+    }
 
     private void monitorSinglePartyCall_btnActionPerformed(java.awt.event.ActionEvent evt) {
-    	// TODO add your handling code here:
+    	logger.info("TODO monitorSinglePartyCall_btnActionPerformed");
     }
     
     public class SinglePartyCallsTableModel extends AbstractTableModel {
