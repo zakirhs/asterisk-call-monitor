@@ -1,7 +1,6 @@
 package org.jmik.asterisk.gui;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -10,7 +9,14 @@ import org.jmik.asterisk.model.impl.Call;
 import org.jmik.asterisk.model.impl.Channel;
 import org.jmik.asterisk.model.impl.ConferenceCall;
 
-
+/**
+ * Model view controller for asterisk call monitor.
+ * Use AsteriskProvider for monitor and drop.
+ * Push notification to its listeners.
+ * 
+ * @author Michele La Porta
+ *
+ */
 public class PresentationModel {	
 
 	private static Logger logger = Logger.getLogger(PresentationModel.class);
@@ -18,17 +24,17 @@ public class PresentationModel {
 	public static final int SINGLEPARTY_CALLTYPE = 1;
 	public static final int TWOPARTIES_CALLTYPE = 2;
 	public static final int CONFERENCE_CALLTYPE = 3;
-	
-	private int singlePartyCall_selectedIndex;
-	private int twoPartiesCall_selectedIndex;
-	private int conferenceCall_selectedIndex;
-	
+
 	private AsteriskProvider asteriskProvider;
 	private List<Call> singlePartyCalls;
 	private List<Call> twoPartiesCalls;
 	private List<Call> conferenceCalls;
 	
 	private List<PresentationModel.Listener> listeners;
+
+	private int singlePartyCall_selectedIndex;
+	private int twoPartiesCall_selectedIndex;
+	private int conferenceCall_selectedIndex;
 	
 	public PresentationModel( AsteriskProvider asteriskProvider, List<Call> singlePartyCalls, 
 		List<Call> twoPartiesCalls, List<Call> conferenceCalls) {
@@ -61,7 +67,8 @@ public class PresentationModel {
 		
 		this.listeners = new ArrayList<PresentationModel.Listener>();
 		
-		logger.info("PresentationModel ready " + this);
+		if(logger.isDebugEnabled())
+			logger.debug("PresentationModel ready " + this);
 	}
 	
 	public void addListener(PresentationModel.Listener listener) {
@@ -70,7 +77,8 @@ public class PresentationModel {
 			throw new IllegalArgumentException("listener can not be null");
 		}
 		listeners.add(listener);
-		logger.info("addListener " + listener);
+		if(logger.isDebugEnabled())
+			logger.debug("addListener " + listener);
 	}
 	
 	public void removeListener(Listener listener) {
@@ -79,7 +87,47 @@ public class PresentationModel {
 			throw new IllegalArgumentException("listener can not be null");
 		}
 		listeners.remove(listener);
-		logger.info("removeListener " + listener);
+		if(logger.isDebugEnabled())
+			logger.debug("removeListener " + listener);
+	}
+	
+	public void callAttached(Call call) {
+		
+		for(Listener listener : listeners) {
+			listener.callAttached(this, call);
+			if(logger.isDebugEnabled())
+			logger.debug("notify callAttached to " + listener);
+		}
+//		asteriskProvider.monitor(call);
+		
+	}
+	
+	public void callStateChanged(int oldState, Call call) {		
+		for(Listener listener : listeners) {
+			listener.callStateChanged(this, oldState, call);
+			if(logger.isDebugEnabled())
+			logger.debug("notify callStateChanged to " + listener);
+		}
+	}
+	
+	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
+		if(logger.isDebugEnabled())
+			logger.debug("channelAdded conferenceCall " + conferenceCall + " channel " + channel);
+		for(Listener listener : listeners) {
+			listener.channelAdded(this, conferenceCall, channel);
+			if(logger.isDebugEnabled())
+			logger.debug("channelAdded notify " + listener);
+		}		
+	}
+	
+	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
+		if(logger.isDebugEnabled())
+			logger.debug("channelRemoved conferenceCall " + conferenceCall + " channel " + channel);
+		for(Listener listener : listeners) {
+			listener.channelRemoved(this, conferenceCall, channel);
+			if(logger.isDebugEnabled())
+			logger.debug("channelRemoved notify " + listener);
+		}		
 	}
 	
 	public void monitorButtonClicked(int callType) {
@@ -99,7 +147,8 @@ public class PresentationModel {
 		}
 		
 		asteriskProvider.monitor(call);	
-		logger.info("monitorButtonClicked monitor " + call);
+		if(logger.isDebugEnabled())
+			logger.debug("monitorButtonClicked monitor " + call);
 	}
 	
 	public void dropButtonClicked(int callType) {
@@ -119,7 +168,8 @@ public class PresentationModel {
 		}
 		
 		asteriskProvider.drop(call); 
-		logger.info("dropButtonClicked drop " + call);
+		if(logger.isDebugEnabled())
+			logger.debug("dropButtonClicked drop " + call);
 	}
 
 	public boolean isMonitorButtonEnabled(int callType) {
@@ -207,47 +257,6 @@ public class PresentationModel {
 		}		
 	}	
 
-	public void callAttached(Call call) {
-		
-		for(Listener listener : listeners) {
-			listener.callAttached(this, call);
-			logger.info("notify callAttached to " + listener);
-		}
-//		asteriskProvider.monitor(call);
-		
-	}
-	
-	public void callStateChanged(int oldState, Call call) {		
-		for(Listener listener : listeners) {
-			listener.callStateChanged(this, oldState, call);
-			logger.info("notify callStateChanged to " + listener);
-		}
-	}
-	
-	public void channelAdded(ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelAdded conferenceCall " + conferenceCall + " channel " + channel);
-		for(Listener listener : listeners) {
-			listener.channelAdded(this, conferenceCall, channel);
-			logger.info("channelAdded notify " + listener);
-		}		
-	}
-	
-	public void channelRemoved(ConferenceCall conferenceCall, Channel channel) {
-		logger.info("channelRemoved conferenceCall " + conferenceCall + " channel " + channel);
-		for(Listener listener : listeners) {
-			listener.channelRemoved(this, conferenceCall, channel);
-			logger.info("channelRemoved notify " + listener);
-		}		
-	}
-	
-	public static interface Listener {
-		void callAttached(PresentationModel model, Call call);
-		void callStateChanged(PresentationModel model, int oldState, Call call);
-		void channelAdded(PresentationModel model, ConferenceCall conferenceCall, Channel channel);
-		void channelRemoved(PresentationModel model, ConferenceCall conferenceCall, Channel channel);
-		void refreshTable(int callType);
-	}
-
 	public void removeInvalidCalls() {
 		if(singlePartyCalls.size() > 0) {
 			for(int i = singlePartyCalls.size() - 1; i >= 0; i--) {
@@ -255,8 +264,7 @@ public class PresentationModel {
 				if(call.getState() == Call.INVALID_STATE) singlePartyCalls.remove(i);
 			}
 			setSelectedIndex(PresentationModel.SINGLEPARTY_CALLTYPE, -1);
-			for(Iterator iter = listeners.iterator(); iter.hasNext();) {
-				Listener listener = (Listener) iter.next();
+			for(Listener listener : listeners) {
 				listener.refreshTable(PresentationModel.SINGLEPARTY_CALLTYPE);
 			}			
 		}
@@ -267,8 +275,7 @@ public class PresentationModel {
 				if(call.getState() == Call.INVALID_STATE) twoPartiesCalls.remove(i);
 			}			
 			setSelectedIndex(PresentationModel.TWOPARTIES_CALLTYPE, -1);
-			for(Iterator iter = listeners.iterator(); iter.hasNext();) {
-				Listener listener = (Listener) iter.next();
+			for(Listener listener : listeners) {
 				listener.refreshTable(PresentationModel.TWOPARTIES_CALLTYPE);
 			}			
 		}		
@@ -279,12 +286,24 @@ public class PresentationModel {
 				if(call.getState() == Call.INVALID_STATE) conferenceCalls.remove(i);
 			}			
 			setSelectedIndex(PresentationModel.CONFERENCE_CALLTYPE, -1);
-			for(Iterator iter = listeners.iterator(); iter.hasNext();) {
-				Listener listener = (Listener) iter.next();
+			for(Listener listener : listeners) {
 				listener.refreshTable(PresentationModel.CONFERENCE_CALLTYPE);
 			}			
 		}	
-		
-		
 	}
+	
+	/**
+	 * AgiExp gui will implements to changes its tab info.
+	 * @author Michele La Porta
+	 *
+	 */
+	public static interface Listener {
+		
+		void callAttached(PresentationModel model, Call call);
+		void callStateChanged(PresentationModel model, int oldState, Call call);
+		void channelAdded(PresentationModel model, ConferenceCall conferenceCall, Channel channel);
+		void channelRemoved(PresentationModel model, ConferenceCall conferenceCall, Channel channel);
+		void refreshTable(int callType);
+	}
+	
 }

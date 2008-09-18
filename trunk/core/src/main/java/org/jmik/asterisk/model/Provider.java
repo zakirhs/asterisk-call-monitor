@@ -9,6 +9,7 @@ import org.jmik.asterisk.model.impl.CallCostruction;
 
 /**
  * This class represents an abstraction of telephony service provider software.
+ * 
  * @author Michele La Porta
  *
  */
@@ -21,7 +22,7 @@ public interface Provider {
 	public void drop(Call call);
 	
 	/**
-	 * Monitor a call
+	 * Monitor a call (record to file)
 	 * @param call
 	 */
 	public void monitor(Call call);
