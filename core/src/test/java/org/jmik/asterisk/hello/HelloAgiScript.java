@@ -1,4 +1,4 @@
-package org.jmik.asterisk.gui;
+package org.jmik.asterisk.hello;
 
 import org.apache.log4j.Logger;
 import org.asteriskjava.fastagi.AgiChannel;
