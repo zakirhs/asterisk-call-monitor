@@ -1,4 +1,4 @@
-package org.jmik.asterisk.gui;
+package org.jmik.asterisk.hello;
 
 import java.io.IOException;
 
